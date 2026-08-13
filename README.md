@@ -1,5 +1,7 @@
 # GRE 6选2等价词刷题 (GRE Select-Two SPA)
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-gre--select--two.pages.dev-22c55e?style=for-the-badge&logo=cloudflare&logoColor=white)](https://gre-select-two.pages.dev/)
+
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.1-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
@@ -7,6 +9,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 一个专为 GRE 考生设计的**等价词 6选2 主动辨认与成组背诵**单页应用（SPA）。界面参考**墨墨背单词**的极简卡片风格，支持全套 CSV 数据自定义导入与导出，帮您建立“选词 - 辨认 - 反馈 - 错题重做 - 通关”的高效学习闭环。
+
+👉 **在线访问地址**：[https://gre-select-two.pages.dev/](https://gre-select-two.pages.dev/)
 
 ---
 
@@ -89,15 +93,10 @@ id,stem,option1,option2,option3,option4,option5,option6,answer1,answer2
 
 ---
 
-## 🌐 一键部署至 Cloudflare Pages
+## 🌐 在线部署
 
-1. 将代码推送到 GitHub 仓库。
-2. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/) -> **Workers & Pages** -> **Create application** -> **Pages** -> **Connect to Git**。
-3. 选择仓库 `gre-select-two`，构建参数设置：
-   - **Framework preset**: `React (Vite)` 或 `None`
-   - **Build command**: `pnpm run build`
-   - **Build output directory**: `dist`
-4. 点击 **Save and Deploy** 即可完成自动部署！
+- **Live URL**: [https://gre-select-two.pages.dev/](https://gre-select-two.pages.dev/)
+- **托管平台**: Cloudflare Pages (已绑定 GitHub `main` 分支自动构建)
 
 ---
 
