@@ -204,7 +204,7 @@ export const useQuizStore = create<QuizState>()(
         }),
     }),
     {
-      name: 'gre_quiz_store_v3',
+      name: 'gre_quiz_store_v4',
       partialize: (state) => ({
         allQuestions: state.allQuestions,
         questionQueue: state.questionQueue,
