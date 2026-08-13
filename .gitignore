@@ -7,6 +7,11 @@ dist
 dist-ssr
 *.local
 
+# Draft files & Python utility scripts
+*.txt
+*.py
+__pycache__/
+
 # Logs
 logs
 *.log
