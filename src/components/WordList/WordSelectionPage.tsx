@@ -151,7 +151,7 @@ export const WordSelectionPage: React.FC = () => {
 
             {/* Daily Quota Setting & Quick Select */}
             <div className="flex items-center space-x-1.5 bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 py-1">
-              <span className="text-xs text-slate-500 font-semibold shrink-0">每日测试量:</span>
+              <span className="text-xs text-slate-500 font-semibold shrink-0">每日学习量:</span>
               <input
                 type="number"
                 min={1}
