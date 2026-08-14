@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { QuizQuestion, AppStage, AnswerStatus, MissingWordError } from '../types';
+import { QuizQuestion, WordEntry, AppStage, AnswerStatus, MissingWordError } from '../types';
 import { parseQuestionsCSV } from '../utils/csvParser';
 import { generateQuestionQueue } from '../utils/questionGenerator';
 import { vibrateSuccess, vibrateError } from '../utils/vibration';
@@ -17,7 +17,8 @@ interface QuizState {
   appStage: AppStage;
 
   // Actions
-  startPractice: (selectedWords: string[]) => boolean;
+  startPractice: (selectedWords: string[], wordList?: WordEntry[]) => boolean;
+  forceStartPractice: (selectedWords: string[], wordList: WordEntry[]) => boolean;
   toggleOption: (option: string) => boolean; // returns true if correct (for auto advance)
   markUnknown: () => void;
   nextQuestion: () => void;
@@ -42,12 +43,33 @@ export const useQuizStore = create<QuizState>()(
       missingWordError: null,
       appStage: 'selection',
 
-      startPractice: (selectedWords) => {
+      startPractice: (selectedWords, wordList = []) => {
         const { allQuestions } = get();
-        const result = generateQuestionQueue(selectedWords, allQuestions);
+        const result = generateQuestionQueue(selectedWords, allQuestions, wordList, false);
 
         if (!result.success || !result.questions) {
           set({ missingWordError: result.error || null });
+          return false;
+        }
+
+        set({
+          missingWordError: null,
+          questionQueue: result.questions,
+          currentQuestionIndex: 0,
+          completedQuestionStatus: {},
+          currentSelections: [],
+          answerStatus: 'idle',
+          appStage: 'quiz',
+        });
+
+        return true;
+      },
+
+      forceStartPractice: (selectedWords, wordList) => {
+        const { allQuestions } = get();
+        const result = generateQuestionQueue(selectedWords, allQuestions, wordList, true);
+
+        if (!result.questions || result.questions.length === 0) {
           return false;
         }
 
@@ -204,7 +226,7 @@ export const useQuizStore = create<QuizState>()(
         }),
     }),
     {
-      name: 'gre_quiz_store_v4',
+      name: 'gre_quiz_store_v5',
       partialize: (state) => ({
         allQuestions: state.allQuestions,
         questionQueue: state.questionQueue,

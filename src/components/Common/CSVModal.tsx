@@ -72,7 +72,7 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-100">
+      <div className="bg-white rounded-3xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-100">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center space-x-2">
@@ -81,7 +81,7 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -90,13 +90,13 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Tab Selector */}
-          <div className="flex rounded-xl bg-slate-100 p-1">
+          <div className="flex rounded-2xl bg-slate-100 p-1">
             <button
               onClick={() => {
                 setActiveTab('words');
                 setStatusMessage(null);
               }}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+              className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all ${
                 activeTab === 'words' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -107,7 +107,7 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
                 setActiveTab('questions');
                 setStatusMessage(null);
               }}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+              className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all ${
                 activeTab === 'questions' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -116,24 +116,24 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
           </div>
 
           {/* CSV Schema Format Guidance */}
-          <div className="p-3.5 bg-blue-50/80 rounded-xl border border-blue-100 text-xs text-blue-800 space-y-1">
+          <div className="p-4 bg-blue-50/80 rounded-2xl border border-blue-100 text-xs text-blue-800 space-y-1">
             <p className="font-semibold text-blue-900">
               {activeTab === 'words' ? '词库 CSV 格式说明：' : '题库 CSV 格式说明：'}
             </p>
             {activeTab === 'words' ? (
-              <p className="font-mono text-slate-700 bg-white/70 p-1.5 rounded border border-blue-200">
+              <p className="font-mono text-slate-700 bg-white/70 p-2 rounded-xl border border-blue-200">
                 单词,等价词,汉语解释<br />
                 mitigate,"abate, curtail, temper",缓和
               </p>
             ) : (
-              <p className="font-mono text-slate-700 bg-white/70 p-1.5 rounded border border-blue-200 overflow-x-auto">
+              <p className="font-mono text-slate-700 bg-white/70 p-2 rounded-xl border border-blue-200 overflow-x-auto">
                 id,stem,option1,option2,option3,option4,option5,option6,answer1,answer2
               </p>
             )}
           </div>
 
           {/* Import mode option */}
-          <div className="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg">
+          <div className="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-3 rounded-2xl">
             <span className="font-medium text-slate-700">导入策略：</span>
             <div className="flex items-center space-x-4">
               <label className="flex items-center space-x-1 cursor-pointer">
@@ -164,7 +164,7 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
           {/* Status Message */}
           {statusMessage && (
             <div
-              className={`p-3 rounded-xl flex items-center space-x-2 text-xs font-medium ${
+              className={`p-3 rounded-2xl flex items-center space-x-2 text-xs font-medium ${
                 statusMessage.type === 'success'
                   ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                   : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -181,7 +181,7 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <label className="flex items-center justify-center space-x-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl cursor-pointer shadow-sm transition-colors">
+            <label className="flex items-center justify-center space-x-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-2xl cursor-pointer shadow-sm transition-colors">
               <Upload className="w-4 h-4" />
               <span>导入 {activeTab === 'words' ? '词库' : '题库'} CSV</span>
               <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
@@ -189,7 +189,7 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
 
             <button
               onClick={handleExport}
-              className="flex items-center justify-center space-x-2 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl transition-colors"
+              className="flex items-center justify-center space-x-2 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-2xl transition-colors"
             >
               <Download className="w-4 h-4 text-slate-600" />
               <span>导出 {activeTab === 'words' ? '词库' : '题库'} CSV</span>

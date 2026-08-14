@@ -10,19 +10,16 @@ interface WordState {
   learnedWords: string[];
   searchQuery: string;
   statusFilter: 'all' | 'unlearned' | 'learned';
-  currentPage: number;
-  pageSize: number;
+  dailyQuota: number;
 
   // Actions
   toggleSelectWord: (word: string) => void;
-  selectAllOnPage: (wordsOnPage: string[]) => void;
-  deselectAllOnPage: (wordsOnPage: string[]) => void;
   selectAllFiltered: (filteredWords: string[]) => void;
   clearAllSelected: () => void;
+  setDailyQuota: (quota: number) => void;
+  selectDailyQuota: () => void;
   setSearchQuery: (query: string) => void;
   setStatusFilter: (filter: 'all' | 'unlearned' | 'learned') => void;
-  setCurrentPage: (page: number) => void;
-  setPageSize: (size: number) => void;
   importWords: (newWords: WordEntry[], replace?: boolean) => void;
   markWordLearned: (word: string) => void;
   resetWordsToDefault: () => void;
@@ -38,8 +35,7 @@ export const useWordStore = create<WordState>()(
       learnedWords: [],
       searchQuery: '',
       statusFilter: 'all',
-      currentPage: 1,
-      pageSize: 20,
+      dailyQuota: 50,
 
       toggleSelectWord: (word) =>
         set((state) => {
@@ -51,17 +47,6 @@ export const useWordStore = create<WordState>()(
           };
         }),
 
-      selectAllOnPage: (wordsOnPage) =>
-        set((state) => {
-          const newSelected = new Set([...state.selectedWords, ...wordsOnPage]);
-          return { selectedWords: Array.from(newSelected) };
-        }),
-
-      deselectAllOnPage: (wordsOnPage) =>
-        set((state) => ({
-          selectedWords: state.selectedWords.filter((w) => !wordsOnPage.includes(w)),
-        })),
-
       selectAllFiltered: (filteredWords) =>
         set((state) => {
           const newSelected = new Set([...state.selectedWords, ...filteredWords]);
@@ -70,13 +55,21 @@ export const useWordStore = create<WordState>()(
 
       clearAllSelected: () => set({ selectedWords: [] }),
 
-      setSearchQuery: (query) => set({ searchQuery: query, currentPage: 1 }),
+      setDailyQuota: (quota) =>
+        set({
+          dailyQuota: Math.max(1, quota),
+        }),
 
-      setStatusFilter: (filter) => set({ statusFilter: filter, currentPage: 1 }),
+      selectDailyQuota: () =>
+        set((state) => {
+          const unlearned = state.wordList.filter((w) => !state.learnedWords.includes(w.word));
+          const targetWords = unlearned.slice(0, state.dailyQuota).map((w) => w.word);
+          return { selectedWords: targetWords };
+        }),
 
-      setCurrentPage: (page) => set({ currentPage: page }),
+      setSearchQuery: (query) => set({ searchQuery: query }),
 
-      setPageSize: (size) => set({ pageSize: size, currentPage: 1 }),
+      setStatusFilter: (filter) => set({ statusFilter: filter }),
 
       importWords: (newWords, replace = false) =>
         set((state) => ({
@@ -96,16 +89,21 @@ export const useWordStore = create<WordState>()(
           learnedWords: [],
           searchQuery: '',
           statusFilter: 'all',
-          currentPage: 1,
+          dailyQuota: 50,
         }),
     }),
     {
-      name: 'gre_word_store_v1',
+      name: 'gre_word_store_v4',
+      onRehydrateStorage: () => (state) => {
+        if (state && (!state.wordList || state.wordList.length === 0)) {
+          state.wordList = defaultWords;
+        }
+      },
       partialize: (state) => ({
-        wordList: state.wordList,
+        wordList: state.wordList && state.wordList.length > 0 ? state.wordList : defaultWords,
         selectedWords: state.selectedWords,
         learnedWords: state.learnedWords,
-        pageSize: state.pageSize,
+        dailyQuota: state.dailyQuota,
       }),
     }
   )

@@ -51,13 +51,26 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       className="w-full max-w-2xl mx-auto space-y-6"
     >
       {/* Stem Card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-slate-200/80 space-y-4">
-        <div className="text-xs font-bold tracking-wider text-slate-400 uppercase">
-          GRE Equivalence Blank (6 选 2)
-        </div>
-        <p className="text-lg sm:text-xl font-medium text-slate-800 leading-relaxed sm:leading-loose tracking-tight">
-          {renderStem(question.stem)}
-        </p>
+      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-slate-200/80 space-y-3">
+        {question.stem && question.stem.trim() !== '' ? (
+          <>
+            <div className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+              GRE Equivalence Blank (6 选 2)
+            </div>
+            <p className="text-lg sm:text-xl font-medium text-slate-800 leading-relaxed sm:leading-loose tracking-tight">
+              {renderStem(question.stem)}
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="text-xs font-bold tracking-wider text-indigo-600 uppercase">
+              ✨ 纯词汇强化训练 (6 选 2)
+            </div>
+            <p className="text-lg sm:text-xl font-bold text-slate-800 tracking-tight">
+              请在下方 6 个选项中选择 2 个互为同义 / 等价的单词
+            </p>
+          </>
+        )}
       </div>
 
       {/* Options Grid */}
