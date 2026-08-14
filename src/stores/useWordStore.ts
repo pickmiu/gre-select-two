@@ -59,9 +59,9 @@ export const useWordStore = create<WordState>()(
       clearAllSelected: () => set({ selectedWords: [] }),
 
       setDailyQuota: (quota) =>
-        set({
-          dailyQuota: Math.max(1, quota),
-        }),
+        set((state) => ({
+          dailyQuota: Math.min(state.wordList.length || 9999, Math.max(1, quota)),
+        })),
 
       selectDailyQuota: () =>
         set((state) => {

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Search, CheckSquare, Square, Play, AlertTriangle, X, Filter, Target, Zap } from 'lucide-react';
 import { useWordStore } from '../../stores/useWordStore';
 import { useQuizStore } from '../../stores/useQuizStore';
@@ -24,6 +24,36 @@ export const WordSelectionPage: React.FC = () => {
   } = useWordStore();
 
   const { startPractice, forceStartPractice, missingWordError, clearMissingWordError } = useQuizStore();
+
+  const [quotaInput, setQuotaInput] = useState<string>(String(dailyQuota));
+
+  // Sync quotaInput when dailyQuota in store changes externally
+  useEffect(() => {
+    setQuotaInput(String(dailyQuota));
+  }, [dailyQuota]);
+
+  const handleQuotaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuotaInput(val);
+    if (val !== '') {
+      const num = parseInt(val, 10);
+      if (!isNaN(num) && num > 0) {
+        setDailyQuota(num);
+      }
+    }
+  };
+
+  const handleQuotaBlur = () => {
+    const num = parseInt(quotaInput, 10);
+    if (isNaN(num) || num < 1) {
+      setDailyQuota(1);
+      setQuotaInput('1');
+    } else {
+      const clamped = Math.min(num, wordList.length || 9999);
+      setDailyQuota(clamped);
+      setQuotaInput(String(clamped));
+    }
+  };
 
   // Auto-restore default words if local cache is empty
   useEffect(() => {
@@ -158,9 +188,10 @@ export const WordSelectionPage: React.FC = () => {
                   type="number"
                   min={1}
                   max={wordList.length}
-                  value={dailyQuota}
-                  onChange={(e) => setDailyQuota(parseInt(e.target.value) || 1)}
-                  className="w-7 text-right text-xs font-bold text-slate-800 bg-transparent focus:outline-none p-0"
+                  value={quotaInput}
+                  onChange={handleQuotaChange}
+                  onBlur={handleQuotaBlur}
+                  className="w-10 text-right text-xs font-bold text-slate-800 bg-transparent focus:outline-none p-0"
                 />
                 <span className="text-xs text-slate-500 font-medium shrink-0">词</span>
               </div>
