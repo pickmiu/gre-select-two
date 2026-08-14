@@ -224,7 +224,7 @@ export const WordSelectionPage: React.FC = () => {
             className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm sm:text-base rounded-2xl shadow-lg shadow-blue-500/25 active:scale-95 transition-all"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>开始学习 ({selectedWords.length})</span>
+            <span>开始测试 ({selectedWords.length})</span>
           </button>
         </div>
       </div>
