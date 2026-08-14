@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, RotateCcw, X } from 'lucide-react';
 
@@ -9,10 +10,10 @@ interface ResetModalProps {
 }
 
 export const ResetModal: React.FC<ResetModalProps> = ({ isOpen, onClose, onConfirm }) => {
-  return (
+  const modalJSX = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -20,7 +21,7 @@ export const ResetModal: React.FC<ResetModalProps> = ({ isOpen, onClose, onConfi
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-950/70"
           />
 
           {/* Modal Card */}
@@ -86,4 +87,6 @@ export const ResetModal: React.FC<ResetModalProps> = ({ isOpen, onClose, onConfi
       )}
     </AnimatePresence>
   );
+
+  return createPortal(modalJSX, document.body);
 };

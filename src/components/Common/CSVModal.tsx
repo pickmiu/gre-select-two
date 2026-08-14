@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Upload, Download, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useWordStore } from '../../stores/useWordStore';
 import { useQuizStore } from '../../stores/useQuizStore';
@@ -70,7 +71,7 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
     URL.revokeObjectURL(url);
   };
 
-  return (
+  const modalJSX = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-3xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-100">
         {/* Header */}
@@ -199,4 +200,6 @@ export const CSVModal: React.FC<CSVModalProps> = ({ onClose }) => {
       </div>
     </div>
   );
+
+  return createPortal(modalJSX, document.body);
 };
