@@ -90,7 +90,7 @@ export const CompletionPage: React.FC = () => {
       <div className="pt-4">
         <button
           onClick={exitPractice}
-          className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-base rounded-2xl shadow-xl shadow-blue-500/25 flex items-center justify-center space-x-2.5 mx-auto transition-all active:scale-95"
+          className="w-full sm:w-auto px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-base rounded-2xl shadow-xl shadow-blue-500/25 flex items-center justify-center space-x-2.5 mx-auto transition-all active:scale-95"
         >
           <RotateCcw className="w-5 h-5" />
           <span>继续选词练习</span>

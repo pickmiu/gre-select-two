@@ -9,6 +9,7 @@ export interface QuizQuestion {
   stem: string;
   options: string[];
   answers: string[];
+  answerBases?: string[];
 }
 
 export type AppStage = 'selection' | 'quiz' | 'completion';

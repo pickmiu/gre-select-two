@@ -58,7 +58,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         {question.stem && question.stem.trim() !== '' ? (
           <>
             <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-              GRE Equivalence Blank (6 选 2)
+              GRE 填空 6 选 2
             </div>
             <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
               {renderStem(question.stem)}

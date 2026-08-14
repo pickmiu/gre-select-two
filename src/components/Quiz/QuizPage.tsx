@@ -19,7 +19,7 @@ export const QuizPage: React.FC = () => {
     exitPractice,
   } = useQuizStore();
 
-  const { markWordLearned } = useWordStore();
+  const { selectedWords, wordList, markWordLearned } = useWordStore();
 
   const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -29,9 +29,21 @@ export const QuizPage: React.FC = () => {
   const handleOptionSelect = (option: string) => {
     const isCorrect = toggleOption(option);
     if (isCorrect) {
-      // Mark words as learned
+      // Mark ONLY user-selected words as learned (do not mark unselected paired equivalent words)
       if (currentQuestion) {
-        currentQuestion.answers.forEach((word) => markWordLearned(word));
+        const selectedSet = new Set(selectedWords.map((w) => w.toLowerCase().trim()));
+
+        currentQuestion.answers.forEach((ansWord) => {
+          const lowerAns = ansWord.toLowerCase().trim();
+          if (selectedSet.has(lowerAns)) {
+            markWordLearned(ansWord);
+          } else {
+            const entry = wordList.find((w) => w.word.toLowerCase().trim() === lowerAns);
+            if (entry && selectedSet.has(entry.word.toLowerCase().trim())) {
+              markWordLearned(entry.word);
+            }
+          }
+        });
       }
 
       // Schedule auto advance after green animation (~850ms)

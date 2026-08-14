@@ -9,7 +9,7 @@ interface WordItemProps {
   onToggle: (word: string) => void;
 }
 
-export const WordItem: React.FC<WordItemProps> = ({
+export const WordItem: React.FC<WordItemProps> = React.memo(({
   wordEntry,
   isSelected,
   isLearned,
@@ -20,20 +20,20 @@ export const WordItem: React.FC<WordItemProps> = ({
   return (
     <div
       onClick={() => onToggle(word)}
-      className={`group relative p-4 sm:p-5 rounded-2xl cursor-pointer select-none transition-all hover:shadow-md ${
+      className={`group relative p-4 sm:p-5 rounded-2xl cursor-pointer select-none border-2 transition-colors duration-150 hover:shadow-md ${
         isSelected
-          ? 'bg-blue-50/80 border-2 border-blue-600 shadow-sm shadow-blue-500/10'
-          : 'bg-white border border-slate-200/80 hover:border-slate-300'
+          ? 'bg-blue-50/80 border-blue-600 shadow-sm shadow-blue-500/10'
+          : 'bg-white border-slate-200/80 hover:border-slate-300'
       }`}
     >
       <div className="flex items-start justify-between space-x-3">
         {/* Checkbox & Word Title */}
         <div className="flex items-center space-x-3 min-w-0">
           <div
-            className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+            className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border-2 ${
               isSelected
-                ? 'bg-blue-600 text-white'
-                : 'border-2 border-slate-300 bg-white'
+                ? 'bg-blue-600 border-blue-600 text-white'
+                : 'border-slate-300 bg-white'
             }`}
           >
             {isSelected && <Check className="w-3.5 h-3.5 stroke-[3] text-white" />}
@@ -58,19 +58,39 @@ export const WordItem: React.FC<WordItemProps> = ({
         </div>
 
         {/* Definition Preview */}
-        <span className="text-xs font-medium text-slate-600 bg-slate-100/90 px-2.5 py-1 rounded-xl shrink-0">
+        <span
+          className={`text-xs font-semibold px-2.5 py-1 rounded-xl shrink-0 ${
+            isSelected
+              ? 'bg-white text-blue-900 border border-blue-200/80 shadow-xs'
+              : 'bg-slate-100 text-slate-700 border border-transparent'
+          }`}
+        >
           {definition}
         </span>
       </div>
 
       {/* Equivalent Words Tags */}
       {equivalents.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5 pt-2.5 border-t border-slate-100">
-          <span className="text-[11px] text-slate-400 font-medium self-center">等价词:</span>
+        <div
+          className={`mt-3 flex flex-wrap gap-1.5 pt-2.5 border-t ${
+            isSelected ? 'border-blue-200/60' : 'border-slate-100'
+          }`}
+        >
+          <span
+            className={`text-[11px] font-medium self-center ${
+              isSelected ? 'text-blue-600 font-semibold' : 'text-slate-400'
+            }`}
+          >
+            等价词:
+          </span>
           {equivalents.map((eq, idx) => (
             <span
               key={idx}
-              className="inline-block px-2.5 py-0.5 text-xs font-mono text-slate-600 bg-slate-100/90 rounded-lg"
+              className={`inline-block px-2.5 py-0.5 text-xs font-mono font-medium rounded-lg ${
+                isSelected
+                  ? 'bg-white text-blue-900 border border-blue-200/80 shadow-xs'
+                  : 'bg-slate-100 text-slate-700 border border-transparent'
+              }`}
             >
               {eq}
             </span>
@@ -79,4 +99,4 @@ export const WordItem: React.FC<WordItemProps> = ({
       )}
     </div>
   );
-};
+});

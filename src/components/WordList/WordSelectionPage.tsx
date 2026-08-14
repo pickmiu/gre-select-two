@@ -92,12 +92,12 @@ export const WordSelectionPage: React.FC = () => {
       {/* Daily Quota Setting & Quick Select Panel */}
       <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-2.5 text-slate-900 font-bold text-base">
-          <Target className="w-5 h-5 text-indigo-600" />
+          <Target className="w-5 h-5 text-blue-600" />
           <span>每日学习量</span>
         </div>
 
         <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2 focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all">
+          <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2 focus-within:ring-2 focus-within:ring-blue-500/30 transition-all">
             <input
               type="number"
               min={1}
@@ -111,7 +111,7 @@ export const WordSelectionPage: React.FC = () => {
 
           <button
             onClick={selectDailyQuota}
-            className="flex items-center space-x-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs rounded-2xl shadow-md shadow-indigo-500/20 transition-all"
+            className="flex items-center space-x-1.5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-2xl shadow-md shadow-blue-500/20 transition-all"
           >
             <Zap className="w-3.5 h-3.5 fill-current" />
             <span>一键勾选</span>
@@ -221,7 +221,7 @@ export const WordSelectionPage: React.FC = () => {
           <button
             onClick={handleStartLearning}
             disabled={selectedWords.length === 0}
-            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm sm:text-base rounded-2xl shadow-lg shadow-blue-500/25 active:scale-95 transition-all"
+            className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm sm:text-base rounded-2xl shadow-lg shadow-blue-500/25 active:scale-95 transition-all"
           >
             <Play className="w-4 h-4 fill-current" />
             <span>开始学习 ({selectedWords.length})</span>
@@ -259,7 +259,7 @@ export const WordSelectionPage: React.FC = () => {
               </button>
               <button
                 onClick={() => forceStartPractice(selectedWords, wordList)}
-                className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-blue-500/20 active:scale-95 transition-all"
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-blue-500/20 active:scale-95 transition-all"
               >
                 继续练习
               </button>

@@ -3,19 +3,19 @@ import { BookOpen, Upload, RotateCcw, Sparkles } from 'lucide-react';
 import { useWordStore } from '../../stores/useWordStore';
 import { useQuizStore } from '../../stores/useQuizStore';
 import { CSVModal } from './CSVModal';
+import { ResetModal } from './ResetModal';
 
 export const Header: React.FC = () => {
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const resetWords = useWordStore((s) => s.resetWordsToDefault);
   const resetQuestions = useQuizStore((s) => s.resetQuestionsToDefault);
   const appStage = useQuizStore((s) => s.appStage);
   const exitPractice = useQuizStore((s) => s.exitPractice);
 
-  const handleResetAll = () => {
-    if (window.confirm('确定要重置所有词库、题库及学习记录恢复为默认状态吗？')) {
-      resetWords();
-      resetQuestions();
-    }
+  const handleConfirmReset = () => {
+    resetWords();
+    resetQuestions();
   };
 
   return (
@@ -34,12 +34,9 @@ export const Header: React.FC = () => {
             />
             <div>
               <div className="flex items-center space-x-1.5">
-                <h1 className="font-bold text-slate-800 text-lg tracking-tight">GRE 等价词练习</h1>
-                <span className="px-2 py-0.5 text-xs font-semibold bg-blue-50 text-blue-600 rounded-full border border-blue-200">
-                  6选2
-                </span>
+                <h1 className="font-bold text-slate-800 text-lg tracking-tight">GRE 6选2等价词真题巧记</h1>
               </div>
-              <p className="text-xs text-slate-500 hidden sm:block"> 800 等价词成组记忆</p>
+              <p className="text-xs text-slate-500 hidden sm:block">800等价词结合真题记忆</p>
             </div>
           </div>
 
@@ -55,7 +52,7 @@ export const Header: React.FC = () => {
             </button>
 
             <button
-              onClick={handleResetAll}
+              onClick={() => setIsResetModalOpen(true)}
               className="inline-flex items-center space-x-1 px-3 py-2 text-xs sm:text-sm font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
               title="重置数据"
             >
@@ -68,6 +65,13 @@ export const Header: React.FC = () => {
 
       {/* CSV Import/Export Modal */}
       {isCsvModalOpen && <CSVModal onClose={() => setIsCsvModalOpen(false)} />}
+
+      {/* Reset Confirmation Modal */}
+      <ResetModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={handleConfirmReset}
+      />
     </>
   );
 };

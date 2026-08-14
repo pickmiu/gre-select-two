@@ -78,16 +78,23 @@ export function parseQuestionsCSV(csvText: string): QuizQuestion[] {
       }
     }
 
-    // Check Format A: answer1, answer2
-    const answerKeys = Object.keys(row).filter((k) => k.startsWith('answer'));
+    // Check Format A: answer1, answer2 (excluding answer1_base, answer2_base)
+    const answerKeys = Object.keys(row).filter((k) => k.startsWith('answer') && !k.includes('base'));
     if (answerKeys.length >= 2) {
       answers = answerKeys.map((k) => row[k]?.trim()).filter(Boolean);
     } else {
       // Format B: answers column
-      const answersCol = Object.keys(row).find((k) => k.includes('answers') || k.includes('答案'));
+      const answersCol = Object.keys(row).find((k) => (k.includes('answers') || k.includes('答案')) && !k.includes('base'));
       if (answersCol && row[answersCol]) {
         answers = row[answersCol].split(/[,，;|]/).map((s) => s.trim()).filter(Boolean);
       }
+    }
+
+    // Check answer1_base, answer2_base
+    let answerBases: string[] = [];
+    const baseKeys = Object.keys(row).filter((k) => k.includes('base'));
+    if (baseKeys.length >= 2) {
+      answerBases = baseKeys.map((k) => row[k]?.trim()).filter(Boolean);
     }
 
     if (options.length > 0 && answers.length > 0) {
@@ -96,6 +103,7 @@ export function parseQuestionsCSV(csvText: string): QuizQuestion[] {
         stem: rawStem,
         options,
         answers,
+        ...(answerBases.length > 0 ? { answerBases } : {}),
       });
     }
   }

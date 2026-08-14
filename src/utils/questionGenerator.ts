@@ -87,6 +87,96 @@ export function generateSyntheticQuestion(
 }
 
 /**
+ * Normalize a word string by stripping leading/trailing articles & prepositions.
+ */
+export function normalizeWordString(text: string): string {
+  if (!text) return '';
+  let t = text.toLowerCase().trim();
+  t = t.replace(/^[.,;:"'`?!()\[\]{}]+/, '');
+  t = t.replace(/[.,;:"'`?!()\[\]{}]+$/, '');
+  t = t.replace(/^(a|an|the|to|of|for|in|on|with|against|from|by|as)\s+/i, '');
+  t = t.replace(/\s+(to|of|for|in|on|with|against|from|by|as)$/i, '');
+  return t.trim();
+}
+
+/**
+ * Generate candidate stem variants for English word (handling -ed, -ing, -s, -es, -ies, -ly, etc.)
+ */
+export function getWordStemsTS(word: string): Set<string> {
+  const norm = normalizeWordString(word);
+  const stems = new Set<string>();
+  if (!norm) return stems;
+  stems.add(norm);
+
+  if (norm.endsWith('ies') && norm.length > 4) {
+    stems.add(norm.slice(0, -3) + 'y');
+  } else if (norm.endsWith('es') && norm.length > 3) {
+    stems.add(norm.slice(0, -2));
+    stems.add(norm.slice(0, -1));
+  } else if (norm.endsWith('s') && !norm.endsWith('ss') && norm.length > 3) {
+    stems.add(norm.slice(0, -1));
+  }
+
+  if (norm.endsWith('ed') && norm.length > 4) {
+    stems.add(norm.slice(0, -2));
+    stems.add(norm.slice(0, -1));
+    if (norm.endsWith('ied')) {
+      stems.add(norm.slice(0, -3) + 'y');
+    }
+  }
+
+  if (norm.endsWith('ing') && norm.length > 5) {
+    stems.add(norm.slice(0, -3));
+    stems.add(norm.slice(0, -3) + 'e');
+  }
+
+  if (norm.endsWith('ly') && norm.length > 4) {
+    stems.add(norm.slice(0, -2));
+    if (norm.endsWith('ily')) {
+      stems.add(norm.slice(0, -3) + 'y');
+    }
+  }
+
+  return stems;
+}
+
+/**
+ * Check if a user's target selected word matches a question's option or answer string.
+ */
+export function isWordMatchOption(targetWord: string, optionStr: string): boolean {
+  if (!targetWord || !optionStr) return false;
+  const targetLower = targetWord.toLowerCase().trim();
+  const optionLower = optionStr.toLowerCase().trim();
+
+  // 1. Direct exact match
+  if (targetLower === optionLower) return true;
+
+  // 2. Normalized match (stripping articles & prepositions)
+  const normTarget = normalizeWordString(targetWord);
+  const normOption = normalizeWordString(optionStr);
+  if (normTarget === normOption) return true;
+
+  // 3. Stem overlap match
+  const targetStems = getWordStemsTS(normTarget);
+  const optionStems = getWordStemsTS(normOption);
+
+  for (const ts of targetStems) {
+    if (optionStems.has(ts)) return true;
+  }
+
+  // 4. Token substring match (e.g. target "discern" in option "discerned by")
+  const optionTokens = normOption.split(/\s+/);
+  for (const token of optionTokens) {
+    const tokenStems = getWordStemsTS(token);
+    for (const ts of targetStems) {
+      if (tokenStems.has(ts)) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Generate question queue for selected words
  */
 export function generateQuestionQueue(
@@ -111,10 +201,18 @@ export function generateQuestionQueue(
   for (const word of selectedWords) {
     const lowerWord = word.toLowerCase().trim();
 
-    // Find questions matching this word (in answers or options)
+    // Find questions matching this word using enhanced matching (handling articles, prepositions & word forms)
     const matchingQuestions = allQuestions.filter((q) => {
-      const answersMatch = q.answers.some((ans) => ans.toLowerCase().trim() === lowerWord);
-      const optionsMatch = q.options.some((opt) => opt.toLowerCase().trim() === lowerWord);
+      // 1. Direct exact match on answerBases
+      if (q.answerBases && q.answerBases.length > 0) {
+        const baseMatch = q.answerBases.some(
+          (b) => b.toLowerCase().trim() === lowerWord || normalizeWordString(b) === lowerWord
+        );
+        if (baseMatch) return true;
+      }
+      // 2. Fallback enhanced match on answers or options
+      const answersMatch = q.answers.some((ans) => isWordMatchOption(word, ans));
+      const optionsMatch = q.options.some((opt) => isWordMatchOption(word, opt));
       return answersMatch || optionsMatch;
     });
 
