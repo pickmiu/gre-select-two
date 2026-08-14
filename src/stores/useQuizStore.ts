@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { QuizQuestion, WordEntry, AppStage, AnswerStatus, MissingWordError } from '../types';
 import { parseQuestionsCSV } from '../utils/csvParser';
-import { generateQuestionQueue } from '../utils/questionGenerator';
+import { useWordStore } from './useWordStore';
+import { generateQuestionQueue, resolveAnswerToHeadword } from '../utils/questionGenerator';
 import { vibrateSuccess, vibrateError } from '../utils/vibration';
 import defaultQuestionsCSV from '../data/questions.csv?raw';
 
@@ -117,6 +118,28 @@ export const useQuizStore = create<QuizState>()(
 
           if (isCorrect) {
             vibrateSuccess();
+
+            // Increment mastery count for answer-base words in useWordStore
+            const wordStore = useWordStore.getState();
+            const targetBases =
+              currentQ.answerBases && currentQ.answerBases.length > 0
+                ? currentQ.answerBases
+                : currentQ.answers;
+
+            const resolvedHeadwords = new Set<string>();
+
+            targetBases.forEach((ans, idx) => {
+              const ansWord = currentQ.answers[idx] || ans;
+              const headword = resolveAnswerToHeadword(ansWord, ans, wordStore.wordList);
+              if (headword) {
+                resolvedHeadwords.add(headword);
+              }
+            });
+
+            resolvedHeadwords.forEach((hw) => {
+              wordStore.incrementWordMastery(hw);
+            });
+
             set((prev) => {
               const currentStatus = prev.completedQuestionStatus[currentQ.id];
               const newStatus: 'green' | 'yellow' = currentStatus === 'yellow' ? 'yellow' : 'green';

@@ -177,6 +177,41 @@ export function isWordMatchOption(targetWord: string, optionStr: string): boolea
 }
 
 /**
+ * Resolve an answer word or base word to its primary headword entry in wordList
+ */
+export function resolveAnswerToHeadword(
+  ansWord: string,
+  ansBase: string | undefined,
+  wordList: WordEntry[]
+): string | null {
+  const targets = [ansBase, ansWord].filter(Boolean) as string[];
+
+  for (const target of targets) {
+    const targetLower = target.toLowerCase().trim();
+
+    // 1. Direct exact match on headword
+    let entry = wordList.find((w) => w.word.toLowerCase().trim() === targetLower);
+    if (entry) return entry.word;
+
+    // 2. Direct exact match on equivalents
+    entry = wordList.find((w) =>
+      w.equivalents.some((eq) => eq.toLowerCase().trim() === targetLower)
+    );
+    if (entry) return entry.word;
+
+    // 3. Stem / normalized match on headword or equivalents
+    entry = wordList.find(
+      (w) =>
+        isWordMatchOption(w.word, target) ||
+        w.equivalents.some((eq) => isWordMatchOption(eq, target))
+    );
+    if (entry) return entry.word;
+  }
+
+  return null;
+}
+
+/**
  * Generate question queue for selected words
  */
 export function generateQuestionQueue(
@@ -201,19 +236,34 @@ export function generateQuestionQueue(
   for (const word of selectedWords) {
     const lowerWord = word.toLowerCase().trim();
 
-    // Find questions matching this word using enhanced matching (handling articles, prepositions & word forms)
+    // Find word entry in wordList to get all equivalent synonyms
+    const entry = wordList.find((w) => w.word.toLowerCase().trim() === lowerWord);
+    const targetSynonyms = new Set<string>();
+    targetSynonyms.add(lowerWord);
+    if (entry) {
+      entry.equivalents.forEach((eq) => targetSynonyms.add(eq.toLowerCase().trim()));
+    }
+
+    // Find questions matching targetWord or its synonyms strictly in CORRECT ANSWERS
     const matchingQuestions = allQuestions.filter((q) => {
-      // 1. Direct exact match on answerBases
+      // 1. Match against answerBases (correct answer base words)
       if (q.answerBases && q.answerBases.length > 0) {
-        const baseMatch = q.answerBases.some(
-          (b) => b.toLowerCase().trim() === lowerWord || normalizeWordString(b) === lowerWord
-        );
+        const baseMatch = q.answerBases.some((b) => {
+          const bNorm = b.toLowerCase().trim();
+          if (targetSynonyms.has(bNorm)) return true;
+          return Array.from(targetSynonyms).some((syn) => isWordMatchOption(syn, b));
+        });
         if (baseMatch) return true;
       }
-      // 2. Fallback enhanced match on answers or options
-      const answersMatch = q.answers.some((ans) => isWordMatchOption(word, ans));
-      const optionsMatch = q.options.some((opt) => isWordMatchOption(word, opt));
-      return answersMatch || optionsMatch;
+
+      // 2. Match against answers (correct answer strings)
+      const answersMatch = q.answers.some((ans) => {
+        const ansNorm = ans.toLowerCase().trim();
+        if (targetSynonyms.has(ansNorm)) return true;
+        return Array.from(targetSynonyms).some((syn) => isWordMatchOption(syn, ans));
+      });
+
+      return answersMatch;
     });
 
     if (matchingQuestions.length === 0) {
