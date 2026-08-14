@@ -45,10 +45,12 @@ export const AnswerOption: React.FC<AnswerOptionProps> = ({
     <button
       onClick={() => onSelect(optionText)}
       disabled={isEvaluated}
-      className={`relative w-full py-2.5 sm:py-3 px-3.5 sm:px-4 rounded-xl sm:rounded-2xl border text-sm sm:text-base tracking-wide transition-all duration-200 flex items-center justify-between min-h-[44px] sm:min-h-[48px] select-none text-left ${containerStyle}`}
+      className={`relative w-full py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl sm:rounded-2xl border text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-between min-h-[38px] sm:min-h-[44px] select-none text-left ${containerStyle}`}
     >
-      <span className="font-semibold font-mono truncate">{optionText}</span>
-      {icon}
+      <span className="font-mono font-semibold truncate flex-1 min-w-0 pr-1.5">{optionText}</span>
+      <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-end shrink-0">
+        {icon}
+      </div>
     </button>
   );
 };
