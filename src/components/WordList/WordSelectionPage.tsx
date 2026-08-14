@@ -149,8 +149,8 @@ export const WordSelectionPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Daily Quota Setting & Quick Select */}
-            <div className="flex items-center space-x-1.5 bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 py-1">
+            {/* Daily Quota Setting Input */}
+            <div className="flex items-center space-x-1.5 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 shrink-0">
               <span className="text-xs text-slate-500 font-semibold shrink-0">每日学习量:</span>
               <div className="flex items-center space-x-0.5">
                 <input
@@ -163,16 +163,17 @@ export const WordSelectionPage: React.FC = () => {
                 />
                 <span className="text-xs text-slate-500 font-medium shrink-0">词</span>
               </div>
-
-              <button
-                onClick={selectDailyQuota}
-                className="inline-flex items-center space-x-1 ml-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-lg shadow-xs transition-all shrink-0"
-                title="一键自动勾选"
-              >
-                <Zap className="w-3 h-3 fill-current" />
-                <span>一键勾选</span>
-              </button>
             </div>
+
+            {/* Quick Select Standalone Button */}
+            <button
+              onClick={selectDailyQuota}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all shrink-0"
+              title="一键自动勾选"
+            >
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              <span>一键勾选</span>
+            </button>
 
             {/* Select All Checkbox Button */}
             <button
