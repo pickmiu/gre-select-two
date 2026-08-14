@@ -20,7 +20,7 @@ export const QuizActions: React.FC<QuizActionsProps> = ({
   const isEvaluated = answerStatus === 'correct' || answerStatus === 'wrong' || answerStatus === 'unknown';
 
   return (
-    <div className="w-full max-w-2xl mx-auto pt-4 space-y-3">
+    <div className="w-full max-w-2xl mx-auto pt-2 pb-1 space-y-5 sm:space-y-6">
       {/* "Don't Know" Button */}
       {!isEvaluated && (
         <button
