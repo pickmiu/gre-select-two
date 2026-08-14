@@ -3,7 +3,11 @@ import { persist } from 'zustand/middleware';
 import { QuizQuestion, WordEntry, AppStage, AnswerStatus, MissingWordError } from '../types';
 import { parseQuestionsCSV } from '../utils/csvParser';
 import { useWordStore } from './useWordStore';
-import { generateQuestionQueue, resolveAnswerToHeadword } from '../utils/questionGenerator';
+import {
+  generateQuestionQueue,
+  resolveAnswerToHeadword,
+  shuffleQuestionOptions,
+} from '../utils/questionGenerator';
 import { vibrateSuccess, vibrateError } from '../utils/vibration';
 import defaultQuestionsCSV from '../data/questions.csv?raw';
 
@@ -162,8 +166,8 @@ export const useQuizStore = create<QuizState>()(
                   ...prev.completedQuestionStatus,
                   [currentQ.id]: newStatus,
                 },
-                // Append currentQ to queue for retry (total questions +1)
-                questionQueue: [...prev.questionQueue, currentQ],
+                // Append currentQ to queue for retry (total questions +1) with reshuffled options
+                questionQueue: [...prev.questionQueue, shuffleQuestionOptions(currentQ)],
               };
             });
             return false;
@@ -187,8 +191,8 @@ export const useQuizStore = create<QuizState>()(
               ...prev.completedQuestionStatus,
               [currentQ.id]: newStatus,
             },
-            // Append currentQ to queue for retry (total questions +1)
-            questionQueue: [...prev.questionQueue, currentQ],
+            // Append currentQ to queue for retry (total questions +1) with reshuffled options
+            questionQueue: [...prev.questionQueue, shuffleQuestionOptions(currentQ)],
           };
         });
       },

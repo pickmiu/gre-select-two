@@ -12,6 +12,16 @@ export function shuffleArray<T>(array: T[]): T[] {
   return arr;
 }
 
+/**
+ * Return a clone of QuizQuestion with its 6 options randomly shuffled
+ */
+export function shuffleQuestionOptions(q: QuizQuestion): QuizQuestion {
+  return {
+    ...q,
+    options: shuffleArray(q.options),
+  };
+}
+
 export interface QuestionGenerationResult {
   success: boolean;
   questions?: QuizQuestion[];
@@ -319,10 +329,10 @@ export function generateQuestionQueue(
       missingWords.push(word);
       if (allowSynthetic) {
         const synthQ = generateSyntheticQuestion(word, wordList);
-        selectedQuestions.push(synthQ);
+        selectedQuestions.push(shuffleQuestionOptions(synthQ));
       }
     } else {
-      selectedQuestions.push(selectedQ);
+      selectedQuestions.push(shuffleQuestionOptions(selectedQ));
     }
   }
 
