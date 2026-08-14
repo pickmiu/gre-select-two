@@ -67,7 +67,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               ✨ 纯词汇强化训练（缺失真题）
             </div>
             <p className="text-lg sm:text-xl font-bold text-slate-800 tracking-tight">
-              请在下方 6 个选项中选择 2 个互为同义 / 等价的单词
+              请在下方 6 个选项中选择 2 个等价的单词
             </p>
           </>
         )}
