@@ -236,46 +236,57 @@ export function generateQuestionQueue(
   for (const word of selectedWords) {
     const lowerWord = word.toLowerCase().trim();
 
-    // Find word entry in wordList to get all equivalent synonyms
+    // Get word entry to retrieve equivalent synonyms
     const entry = wordList.find((w) => w.word.toLowerCase().trim() === lowerWord);
-    const targetSynonyms = new Set<string>();
-    targetSynonyms.add(lowerWord);
+    const equivalents = new Set<string>();
     if (entry) {
-      entry.equivalents.forEach((eq) => targetSynonyms.add(eq.toLowerCase().trim()));
+      entry.equivalents.forEach((eq) => equivalents.add(eq.toLowerCase().trim()));
     }
 
-    // Find questions matching targetWord or its synonyms strictly in CORRECT ANSWERS
-    const matchingQuestions = allQuestions.filter((q) => {
-      // 1. Match against answerBases (correct answer base words)
+    // Helper: check if a question's correct answers/bases match a target word string strictly
+    const questionMatchesTarget = (q: QuizQuestion, targetStr: string): boolean => {
       if (q.answerBases && q.answerBases.length > 0) {
         const baseMatch = q.answerBases.some((b) => {
           const bNorm = b.toLowerCase().trim();
-          if (targetSynonyms.has(bNorm)) return true;
-          return Array.from(targetSynonyms).some((syn) => isWordMatchOption(syn, b));
+          if (bNorm === targetStr) return true;
+          return isWordMatchOption(targetStr, b);
         });
         if (baseMatch) return true;
       }
 
-      // 2. Match against answers (correct answer strings)
-      const answersMatch = q.answers.some((ans) => {
+      return q.answers.some((ans) => {
         const ansNorm = ans.toLowerCase().trim();
-        if (targetSynonyms.has(ansNorm)) return true;
-        return Array.from(targetSynonyms).some((syn) => isWordMatchOption(syn, ans));
+        if (ansNorm === targetStr) return true;
+        return isWordMatchOption(targetStr, ans);
       });
+    };
 
-      return answersMatch;
+    // Priority 1: Questions where the PRIMARY SELECTED WORD itself (e.g. "mitigate") is the CORRECT ANSWER
+    const priority1Questions = allQuestions.filter((q) => questionMatchesTarget(q, lowerWord));
+
+    // Priority 2: Questions where one of the EQUIVALENT SYNONYMS (e.g. "abate", "curtail", "temper") is the CORRECT ANSWER
+    const priority2Questions = allQuestions.filter((q) => {
+      return Array.from(equivalents).some((eq) => questionMatchesTarget(q, eq));
     });
 
-    if (matchingQuestions.length === 0) {
+    let selectedQ: QuizQuestion | null = null;
+
+    if (priority1Questions.length > 0) {
+      // Pick 1 random question from Priority 1 (Primary selected word is correct answer)
+      selectedQ = priority1Questions[Math.floor(Math.random() * priority1Questions.length)];
+    } else if (priority2Questions.length > 0) {
+      // Pick 1 random question from Priority 2 (Equivalent synonym is correct answer)
+      selectedQ = priority2Questions[Math.floor(Math.random() * priority2Questions.length)];
+    }
+
+    if (!selectedQ) {
       missingWords.push(word);
       if (allowSynthetic) {
         const synthQ = generateSyntheticQuestion(word, wordList);
         selectedQuestions.push(synthQ);
       }
     } else {
-      // Pick 1 random question for this word
-      const randomQuestion = matchingQuestions[Math.floor(Math.random() * matchingQuestions.length)];
-      selectedQuestions.push(randomQuestion);
+      selectedQuestions.push(selectedQ);
     }
   }
 
