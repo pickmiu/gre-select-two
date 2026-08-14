@@ -24,15 +24,15 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 }) => {
   // Format stem with styled fill-in-the-blank highlight
   const renderStem = (stem: string) => {
-    const parts = stem.split('______');
+    const parts = stem.split(/_{2,}/);
     if (parts.length <= 1) {
       return <span>{stem}</span>;
     }
     return (
       <>
         {parts[0]}
-        <span className="inline-block px-3 py-0.5 mx-1 bg-blue-50 text-blue-700 font-mono font-bold rounded-lg">
-          ______
+        <span className="inline-block px-3 py-0.5 mx-1 bg-blue-50 text-blue-700 font-mono font-bold rounded-lg border border-blue-200/60 shadow-xs">
+          _______
         </span>
         {parts[1]}
       </>
