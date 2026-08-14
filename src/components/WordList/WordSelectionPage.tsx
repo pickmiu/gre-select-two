@@ -89,100 +89,93 @@ export const WordSelectionPage: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 pb-28 space-y-6">
 
-      {/* Daily Quota Setting & Quick Select Panel */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex items-center space-x-2.5 text-slate-900 font-bold text-base">
-          <Target className="w-5 h-5 text-blue-600" />
-          <span>每日学习量</span>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2 focus-within:ring-2 focus-within:ring-blue-500/30 transition-all">
-            <input
-              type="number"
-              min={1}
-              max={wordList.length}
-              value={dailyQuota}
-              onChange={(e) => setDailyQuota(parseInt(e.target.value) || 1)}
-              className="w-16 text-center text-sm font-bold text-slate-800 bg-transparent focus:outline-none"
-            />
-            <span className="text-xs text-slate-500 font-medium">词</span>
-          </div>
-
-          <button
-            onClick={selectDailyQuota}
-            className="flex items-center space-x-1.5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-2xl shadow-md shadow-blue-500/20 transition-all"
-          >
-            <Zap className="w-3.5 h-3.5 fill-current" />
-            <span>一键勾选</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Filter & Search Bar */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80 space-y-4">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      {/* Consolidated Compact Control Toolbar */}
+      <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-card border border-slate-200/80 space-y-3">
+        {/* Top Controls: Search + Quota + Status Tabs */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="relative flex-1 min-w-0">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder=""
-              className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all"
+              placeholder="搜索单词、等价词或释义..."
+              className="w-full pl-10 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
-          {/* Status Tabs */}
-          <div className="flex items-center rounded-2xl bg-slate-100 p-1 shrink-0">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all ${
-                statusFilter === 'all'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              全部 ({wordList.length})
-            </button>
-            <button
-              onClick={() => setStatusFilter('unlearned')}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all ${
-                statusFilter === 'unlearned'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              未掌握 ({unlearnedCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter('learned')}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all ${
-                statusFilter === 'learned'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              已掌握 ({learnedWords.length})
-            </button>
-          </div>
-        </div>
+          {/* Right Group: Status Filter Tabs + Daily Quota + Select All */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
+            {/* Status Filter Tabs */}
+            <div className="flex items-center rounded-xl bg-slate-100 p-1 shrink-0">
+              <button
+                onClick={() => setStatusFilter('all')}
+                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+                  statusFilter === 'all'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                全部 ({wordList.length})
+              </button>
+              <button
+                onClick={() => setStatusFilter('unlearned')}
+                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+                  statusFilter === 'unlearned'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                未掌握 ({unlearnedCount})
+              </button>
+              <button
+                onClick={() => setStatusFilter('learned')}
+                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+                  statusFilter === 'learned'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                已掌握 ({learnedWords.length})
+              </button>
+            </div>
 
-        {/* Selection Actions Bar */}
-        <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 text-xs">
-          <div className="flex flex-wrap items-center gap-2">
+            {/* Daily Quota Setting & Quick Select */}
+            <div className="flex items-center space-x-1.5 bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 py-1">
+              <span className="text-xs text-slate-500 font-semibold shrink-0">每日测试量:</span>
+              <input
+                type="number"
+                min={1}
+                max={wordList.length}
+                value={dailyQuota}
+                onChange={(e) => setDailyQuota(parseInt(e.target.value) || 1)}
+                className="w-10 text-center text-xs font-bold text-slate-800 bg-transparent focus:outline-none"
+              />
+              <span className="text-xs text-slate-400 font-medium shrink-0">词</span>
+
+              <button
+                onClick={selectDailyQuota}
+                className="inline-flex items-center space-x-1 ml-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-lg shadow-xs transition-all shrink-0"
+                title="一键自动勾选"
+              >
+                <Zap className="w-3 h-3 fill-current" />
+                <span>一键勾选</span>
+              </button>
+            </div>
+
+            {/* Select All Checkbox Button */}
             <button
               onClick={handleToggleSelectAll}
-              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors"
+              className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors shrink-0"
             >
               {isAllFilteredSelected ? (
                 <CheckSquare className="w-3.5 h-3.5 text-blue-600" />
