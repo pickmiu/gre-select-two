@@ -9,6 +9,7 @@ export const WordSelectionPage: React.FC = () => {
     wordList,
     selectedWords,
     learnedWords,
+    wordMastery,
     searchQuery,
     statusFilter,
     dailyQuota,
@@ -204,15 +205,19 @@ export const WordSelectionPage: React.FC = () => {
       {/* Word List - 1 card per row */}
       {filteredWords.length > 0 ? (
         <div className="grid grid-cols-1 gap-3.5">
-          {filteredWords.map((entry) => (
-            <WordItem
-              key={entry.word}
-              wordEntry={entry}
-              isSelected={selectedWords.includes(entry.word)}
-              isLearned={learnedWords.includes(entry.word)}
-              onToggle={toggleSelectWord}
-            />
-          ))}
+          {filteredWords.map((entry) => {
+            const count = wordMastery[entry.word] || (learnedWords.includes(entry.word) ? 1 : 0);
+            return (
+              <WordItem
+                key={entry.word}
+                wordEntry={entry}
+                isSelected={selectedWords.includes(entry.word)}
+                isLearned={learnedWords.includes(entry.word) || count > 0}
+                masteryCount={count}
+                onToggle={toggleSelectWord}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80 space-y-2">

@@ -72,10 +72,10 @@ export const WordItem: React.FC<WordItemProps> = React.memo(({
             {(isLearned || masteryCount > 0) && (
               <span
                 className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 shrink-0 ml-1 font-sans"
-                title={`已做对并掌握 ${masteryCount || 1} 次`}
+                title={`已做对并掌握 ${masteryCount || (isLearned ? 1 : 0)} 次`}
               >
                 <BookCheck className="w-3 h-3 mr-0.5" />
-                已掌握 {masteryCount || 1} 次
+                已掌握 {masteryCount || (isLearned ? 1 : 0)} 次
               </span>
             )}
           </div>
