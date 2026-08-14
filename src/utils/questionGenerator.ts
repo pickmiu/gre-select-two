@@ -233,6 +233,39 @@ export function generateQuestionQueue(
   const selectedQuestions: QuizQuestion[] = [];
   const missingWords: string[] = [];
 
+  // 1. Build the complete pool of words known by the user (selected words + their equivalents)
+  const userKnownWords = new Set<string>();
+  for (const selWord of selectedWords) {
+    const selLower = selWord.toLowerCase().trim();
+    userKnownWords.add(selLower);
+    const entry = wordList.find((w) => w.word.toLowerCase().trim() === selLower);
+    if (entry) {
+      entry.equivalents.forEach((eq) => userKnownWords.add(eq.toLowerCase().trim()));
+    }
+  }
+
+  // Helper: check if a target answer string (or base) is known by the user
+  const isAnswerKnown = (ansStr: string, ansBaseStr?: string): boolean => {
+    const targets = [ansBaseStr, ansStr].filter(Boolean) as string[];
+    for (const target of targets) {
+      const tLower = target.toLowerCase().trim();
+      if (userKnownWords.has(tLower)) return true;
+      if (Array.from(userKnownWords).some((known) => isWordMatchOption(known, target))) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Helper: check if EVERY correct answer in a question is known by the user
+  const areAllQuestionAnswersKnown = (q: QuizQuestion): boolean => {
+    if (!q.answers || q.answers.length === 0) return false;
+    return q.answers.every((ans, idx) => {
+      const base = q.answerBases && q.answerBases[idx] ? q.answerBases[idx] : undefined;
+      return isAnswerKnown(ans, base);
+    });
+  };
+
   for (const word of selectedWords) {
     const lowerWord = word.toLowerCase().trim();
 
@@ -261,11 +294,14 @@ export function generateQuestionQueue(
       });
     };
 
-    // Priority 1: Questions where the PRIMARY SELECTED WORD itself (e.g. "mitigate") is the CORRECT ANSWER
-    const priority1Questions = allQuestions.filter((q) => questionMatchesTarget(q, lowerWord));
+    // Filter candidate questions where ALL correct answers are known by the user
+    const validQuestions = allQuestions.filter((q) => areAllQuestionAnswersKnown(q));
 
-    // Priority 2: Questions where one of the EQUIVALENT SYNONYMS (e.g. "abate", "curtail", "temper") is the CORRECT ANSWER
-    const priority2Questions = allQuestions.filter((q) => {
+    // Priority 1: Valid questions where the PRIMARY SELECTED WORD itself (e.g. "mitigate") is one of the CORRECT ANSWERS
+    const priority1Questions = validQuestions.filter((q) => questionMatchesTarget(q, lowerWord));
+
+    // Priority 2: Valid questions where one of the EQUIVALENT SYNONYMS (e.g. "abate", "curtail", "temper") is one of the CORRECT ANSWERS
+    const priority2Questions = validQuestions.filter((q) => {
       return Array.from(equivalents).some((eq) => questionMatchesTarget(q, eq));
     });
 
