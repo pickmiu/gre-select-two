@@ -9,6 +9,7 @@ import {
   shuffleQuestionOptions,
 } from '../utils/questionGenerator';
 import { vibrateSuccess, vibrateError } from '../utils/vibration';
+import { soundService } from '../utils/audio';
 import defaultQuestionsCSV from '../data/questions.csv?raw';
 
 interface QuizState {
@@ -110,6 +111,7 @@ export const useQuizStore = create<QuizState>()(
           nextSelections = [...state.currentSelections, option];
         }
 
+        soundService.playSelect();
         set({ currentSelections: nextSelections });
 
         // If exactly 2 options selected, evaluate answer!
@@ -122,6 +124,7 @@ export const useQuizStore = create<QuizState>()(
 
           if (isCorrect) {
             vibrateSuccess();
+            soundService.playCorrect();
 
             // Increment mastery count for answer-base words in useWordStore
             const wordStore = useWordStore.getState();
@@ -158,6 +161,7 @@ export const useQuizStore = create<QuizState>()(
             return true; // signal correct answer to caller
           } else {
             vibrateError();
+            soundService.playWrong();
             set((prev) => {
               const newStatus: 'green' | 'yellow' = 'yellow';
               return {
@@ -183,6 +187,7 @@ export const useQuizStore = create<QuizState>()(
         if (!currentQ) return;
 
         vibrateError();
+        soundService.playWrong();
         set((prev) => {
           const newStatus: 'green' | 'yellow' = 'yellow';
           return {
@@ -207,6 +212,7 @@ export const useQuizStore = create<QuizState>()(
           });
         } else {
           // Reached end of all questions including retries!
+          soundService.playComplete();
           set({
             appStage: 'completion',
             currentSelections: [],

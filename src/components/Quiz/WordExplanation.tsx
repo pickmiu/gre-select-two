@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowRight, AlertCircle, HelpCircle, BookOpen } from 'lucide-react';
 import { useWordStore } from '../../stores/useWordStore';
 import { QuizQuestion, AnswerStatus } from '../../types';
@@ -96,9 +97,9 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
   const title = answerStatus === 'wrong' ? '✕ 回答错误' : '不认识';
   const isWrong = answerStatus === 'wrong';
 
-  return (
+  const modalJSX = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 animate-fade-in"
       onClick={onNext}
     >
       <div
@@ -186,4 +187,6 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(modalJSX, document.body);
 };

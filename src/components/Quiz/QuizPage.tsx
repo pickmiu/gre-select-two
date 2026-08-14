@@ -69,9 +69,9 @@ export const QuizPage: React.FC = () => {
   }
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] max-w-4xl mx-auto px-3 sm:px-4 py-1.5 sm:py-2 flex flex-col justify-between overflow-hidden select-none">
+    <div className="h-[100dvh] max-h-[100dvh] max-w-4xl mx-auto px-4 py-2 sm:py-3 flex flex-col justify-between overflow-hidden select-none">
       {/* Top Fixed Progress Bar */}
-      <div className="shrink-0 w-full pt-0.5 pb-1.5 border-b border-slate-200/60 bg-slate-50/95 backdrop-blur-sm">
+      <div className="shrink-0 w-full pt-1 pb-2 border-b border-slate-200/60 bg-slate-50/95 backdrop-blur-sm">
         <ProgressBar
           currentIndex={currentQuestionIndex}
           totalQuestions={questionQueue.length}
@@ -81,7 +81,7 @@ export const QuizPage: React.FC = () => {
       </div>
 
       {/* Main Quiz Card Area */}
-      <div className="flex-1 flex flex-col justify-center min-h-0 py-1.5 sm:py-2 overflow-y-auto scrollbar-none">
+      <div className="flex-1 flex flex-col justify-center min-h-0 py-2 sm:py-3 overflow-y-auto scrollbar-none">
         <QuizCard
           question={currentQuestion}
           currentSelections={currentSelections}
@@ -93,7 +93,7 @@ export const QuizPage: React.FC = () => {
       </div>
 
       {/* Bottom Fixed Actions */}
-      <div className="shrink-0 w-full pt-1 pb-1.5 bg-slate-50/95 backdrop-blur-sm border-t border-slate-100">
+      <div className="shrink-0 w-full pt-1.5 pb-2 bg-slate-50/95 backdrop-blur-sm border-t border-slate-100">
         <QuizActions
           currentIndex={currentQuestionIndex}
           answerStatus={answerStatus}
