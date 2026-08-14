@@ -180,7 +180,7 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
             onClick={onNext}
             className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base rounded-xl shadow-md shadow-blue-500/30 flex items-center justify-center space-x-2 transition-all active:scale-[0.98]"
           >
-            <span>下一题 (Enter)</span>
+            <span>下一题</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
