@@ -72,29 +72,31 @@ export const WordItem: React.FC<WordItemProps> = React.memo(({
       {/* Equivalent Words Tags */}
       {equivalents.length > 0 && (
         <div
-          className={`mt-3 flex flex-wrap gap-1.5 pt-2.5 border-t ${
+          className={`mt-3 flex items-start space-x-2 pt-2.5 border-t ${
             isSelected ? 'border-blue-200/60' : 'border-slate-100'
           }`}
         >
           <span
-            className={`text-[11px] font-medium self-center ${
+            className={`text-[11px] font-medium pt-0.5 shrink-0 ${
               isSelected ? 'text-blue-600 font-semibold' : 'text-slate-400'
             }`}
           >
             等价词:
           </span>
-          {equivalents.map((eq, idx) => (
-            <span
-              key={idx}
-              className={`inline-block px-2.5 py-0.5 text-xs font-mono font-medium rounded-lg ${
-                isSelected
-                  ? 'bg-white text-blue-900 border border-blue-200/80 shadow-xs'
-                  : 'bg-slate-100 text-slate-700 border border-transparent'
-              }`}
-            >
-              {eq}
-            </span>
-          ))}
+          <div className="flex flex-wrap gap-1.5 min-w-0 flex-1">
+            {equivalents.map((eq, idx) => (
+              <span
+                key={idx}
+                className={`inline-block px-2.5 py-0.5 text-xs font-mono font-medium rounded-lg ${
+                  isSelected
+                    ? 'bg-white text-blue-900 border border-blue-200/80 shadow-xs'
+                    : 'bg-slate-100 text-slate-700 border border-transparent'
+                }`}
+              >
+                {eq}
+              </span>
+            ))}
+          </div>
         </div>
       )}
     </div>
