@@ -152,15 +152,17 @@ export const WordSelectionPage: React.FC = () => {
             {/* Daily Quota Setting & Quick Select */}
             <div className="flex items-center space-x-1.5 bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 py-1">
               <span className="text-xs text-slate-500 font-semibold shrink-0">每日学习量:</span>
-              <input
-                type="number"
-                min={1}
-                max={wordList.length}
-                value={dailyQuota}
-                onChange={(e) => setDailyQuota(parseInt(e.target.value) || 1)}
-                className="w-10 text-center text-xs font-bold text-slate-800 bg-transparent focus:outline-none"
-              />
-              <span className="text-xs text-slate-400 font-medium shrink-0">词</span>
+              <div className="flex items-center space-x-0.5">
+                <input
+                  type="number"
+                  min={1}
+                  max={wordList.length}
+                  value={dailyQuota}
+                  onChange={(e) => setDailyQuota(parseInt(e.target.value) || 1)}
+                  className="w-7 text-right text-xs font-bold text-slate-800 bg-transparent focus:outline-none p-0"
+                />
+                <span className="text-xs text-slate-500 font-medium shrink-0">词</span>
+              </div>
 
               <button
                 onClick={selectDailyQuota}
