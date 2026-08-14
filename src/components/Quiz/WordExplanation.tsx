@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, AlertCircle, HelpCircle, BookOpen } from 'lucide-react';
 import { useWordStore } from '../../stores/useWordStore';
 import { QuizQuestion, AnswerStatus } from '../../types';
+import { isWordMatchOption } from '../../utils/questionGenerator';
 
 interface WordExplanationProps {
   question: QuizQuestion;
@@ -20,21 +21,42 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
     return null;
   }
 
-  // Lookup CSV word entries and deduplicate by primary headword
-  const rawEntries = question.answers.map((ansWord) => {
-    const lowerAns = ansWord.toLowerCase().trim();
+  const findEntryForWord = (ansWord: string, ansBase?: string) => {
+    const targets = [ansBase, ansWord].filter(Boolean) as string[];
 
-    // 1. Direct match on primary word
-    let entry = wordList.find(
-      (w) => w.word.toLowerCase().trim() === lowerAns
-    );
+    for (const target of targets) {
+      const targetLower = target.toLowerCase().trim();
 
-    // 2. Fallback: match inside equivalents list
-    if (!entry) {
+      // 1. Direct exact match on headword
+      let entry = wordList.find((w) => w.word.toLowerCase().trim() === targetLower);
+      if (entry) return entry;
+
+      // 2. Direct exact match on equivalents
       entry = wordList.find((w) =>
-        w.equivalents.some((eq) => eq.toLowerCase().trim() === lowerAns)
+        w.equivalents.some((eq) => eq.toLowerCase().trim() === targetLower)
       );
+      if (entry) return entry;
+
+      // 3. Stem / normalized match on headword or equivalents using isWordMatchOption
+      entry = wordList.find(
+        (w) =>
+          isWordMatchOption(w.word, target) ||
+          w.equivalents.some((eq) => isWordMatchOption(eq, target))
+      );
+      if (entry) return entry;
     }
+
+    return null;
+  };
+
+  // Lookup CSV word entries and deduplicate by primary headword
+  const rawEntries = question.answers.map((ansWord, idx) => {
+    const ansBase =
+      question.answerBases && question.answerBases[idx]
+        ? question.answerBases[idx]
+        : undefined;
+
+    const entry = findEntryForWord(ansWord, ansBase);
 
     if (entry) {
       return {
@@ -46,8 +68,8 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
     }
 
     return {
-      key: lowerAns,
-      headword: ansWord,
+      key: (ansBase || ansWord).toLowerCase().trim(),
+      headword: ansBase || ansWord,
       equivalents: [],
       definition: '暂无释义',
     };
