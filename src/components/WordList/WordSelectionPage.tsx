@@ -87,7 +87,7 @@ export const WordSelectionPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 pb-28 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 py-6 pb-12 space-y-6">
 
       {/* Consolidated Compact Control Toolbar */}
       <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-card border border-slate-200/80 space-y-3">
@@ -186,6 +186,16 @@ export const WordSelectionPage: React.FC = () => {
               )}
               <span>全选</span>
             </button>
+
+            {/* Start Test CTA Button */}
+            <button
+              onClick={handleStartLearning}
+              disabled={selectedWords.length === 0}
+              className="inline-flex items-center space-x-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 active:scale-95 transition-all shrink-0 ml-1"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>开始测试 ({selectedWords.length})</span>
+            </button>
           </div>
         </div>
       </div>
@@ -209,20 +219,6 @@ export const WordSelectionPage: React.FC = () => {
           <p className="text-slate-600 font-medium text-sm">未查找到匹配的单词</p>
         </div>
       )}
-
-      {/* Sticky Floating Bottom Bar for CTA */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/90 backdrop-blur-lg border-t border-slate-200/80 py-3.5 shadow-lg">
-        <div className="max-w-5xl mx-auto px-4 flex items-center justify-end gap-4">
-          <button
-            onClick={handleStartLearning}
-            disabled={selectedWords.length === 0}
-            className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm sm:text-base rounded-2xl shadow-lg shadow-blue-500/25 active:scale-95 transition-all"
-          >
-            <Play className="w-4 h-4 fill-current" />
-            <span>开始测试 ({selectedWords.length})</span>
-          </button>
-        </div>
-      </div>
 
       {/* Missing Question Error Modal */}
       {missingWordError && (
