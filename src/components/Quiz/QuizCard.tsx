@@ -102,9 +102,9 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       {!isEvaluated && (
         <button
           onClick={onMarkUnknown}
-          className="w-full py-2.5 sm:py-3 px-4 bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-colors flex items-center justify-center space-x-2 shadow-xs active:scale-[0.99]"
+          className="w-full py-2.5 sm:py-3 px-4 bg-slate-200/90 hover:bg-slate-300 border border-slate-300/80 text-slate-800 font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-all flex items-center justify-center space-x-2 shadow-sm active:scale-[0.99]"
         >
-          <HelpCircle className="w-4 h-4 text-amber-500" />
+          <HelpCircle className="w-4.5 h-4.5 text-amber-600" />
           <span>不认识</span>
         </button>
       )}
