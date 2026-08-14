@@ -62,32 +62,32 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
   const isWrong = answerStatus === 'wrong';
 
   return (
-    <div className="mt-6 p-5 sm:p-6 bg-slate-900 text-white rounded-3xl shadow-2xl space-y-4 animate-slide-up border border-slate-800">
+    <div className="mt-3 p-3.5 sm:p-4 bg-slate-900 text-white rounded-2xl sm:rounded-3xl shadow-xl space-y-2.5 animate-slide-up border border-slate-800">
       {/* Status & Title Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2 text-rose-400 font-bold text-base sm:text-lg">
+        <div className="flex items-center space-x-2 text-rose-400 font-bold text-sm sm:text-base">
           {isWrong ? (
-            <AlertCircle className="w-5 h-5 shrink-0" />
+            <AlertCircle className="w-4 h-4 shrink-0" />
           ) : (
-            <HelpCircle className="w-5 h-5 shrink-0 text-amber-400" />
+            <HelpCircle className="w-4 h-4 shrink-0 text-amber-400" />
           )}
           <span className={isWrong ? 'text-rose-400' : 'text-amber-400'}>{title}</span>
         </div>
 
-        <span className="text-xs text-slate-400 flex items-center space-x-1 font-medium">
-          <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+        <span className="text-[11px] text-slate-400 flex items-center space-x-1 font-medium">
+          <BookOpen className="w-3 h-3 text-blue-400" />
           <span>等价词背诵记忆</span>
         </span>
       </div>
 
       {/* Correct Answers Bar */}
       <div className="flex items-center space-x-2 text-xs">
-        <span className="font-semibold text-slate-400 uppercase tracking-wider shrink-0">正确答案:</span>
+        <span className="font-semibold text-slate-400 uppercase tracking-wider shrink-0 text-[11px]">正确答案:</span>
         <div className="flex flex-wrap gap-1.5">
           {question.answers.map((ans) => (
             <span
               key={ans}
-              className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-lg font-mono font-bold"
+              className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-md font-mono font-bold text-xs"
             >
               {ans}
             </span>
@@ -96,25 +96,25 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
       </div>
 
       {/* Clean 1-Line per Word Entry Equivalence List */}
-      <div className="space-y-2 pt-2 border-t border-slate-800">
+      <div className="space-y-1.5 pt-1.5 border-t border-slate-800">
         {uniqueEntries.map((entry, idx) => (
           <div
             key={idx}
-            className="flex items-center justify-between gap-3 p-3 bg-slate-800/90 rounded-2xl border border-slate-700/80"
+            className="flex items-center justify-between gap-2 p-2 bg-slate-800/90 rounded-xl border border-slate-700/80"
           >
             {/* Left: Equivalence Equation (headword = eq1, eq2...) */}
             <div className="flex flex-wrap items-center gap-1.5 min-w-0 font-mono">
-              <span className="font-extrabold text-blue-300 text-sm sm:text-base">
+              <span className="font-extrabold text-blue-300 text-xs sm:text-sm">
                 {entry.headword}
               </span>
 
               {entry.equivalents.length > 0 && (
                 <>
-                  <span className="text-slate-400 font-bold text-xs">=</span>
+                  <span className="text-slate-400 font-bold text-[10px]">=</span>
                   {entry.equivalents.map((eq, eqIdx) => (
                     <span
                       key={eqIdx}
-                      className="px-2 py-0.5 text-xs bg-slate-700/80 text-slate-200 rounded-md font-medium"
+                      className="px-1.5 py-0.5 text-[11px] bg-slate-700/80 text-slate-200 rounded-md font-medium"
                     >
                       {eq}
                     </span>
@@ -124,7 +124,7 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
             </div>
 
             {/* Right: Chinese Definition Tag */}
-            <span className="px-2.5 py-1 text-xs font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 rounded-xl shrink-0">
+            <span className="px-2 py-0.5 text-[11px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 rounded-lg shrink-0">
               {entry.definition}
             </span>
           </div>
@@ -132,13 +132,13 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
       </div>
 
       {/* Next Question CTA Button */}
-      <div className="pt-2">
+      <div className="pt-1">
         <button
           onClick={onNext}
-          className="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-base rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2 transition-all active:scale-[0.98]"
+          className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm sm:text-base rounded-xl shadow-md shadow-blue-500/30 flex items-center justify-center space-x-2 transition-all active:scale-[0.98]"
         >
           <span>下一题</span>
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>

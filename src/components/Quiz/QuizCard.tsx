@@ -48,25 +48,25 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         x: isWrong ? [0, -10, 10, -10, 10, 0] : 0,
       }}
       transition={{ duration: isWrong ? 0.4 : 0.25 }}
-      className="w-full max-w-2xl mx-auto space-y-6"
+      className="w-full max-w-2xl mx-auto space-y-3 sm:space-y-4"
     >
       {/* Stem Card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-slate-200/80 space-y-3">
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-card border border-slate-200/80 space-y-1.5">
         {question.stem && question.stem.trim() !== '' ? (
           <>
-            <div className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+            <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               GRE Equivalence Blank (6 选 2)
             </div>
-            <p className="text-lg sm:text-xl font-medium text-slate-800 leading-relaxed sm:leading-loose tracking-tight">
+            <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
               {renderStem(question.stem)}
             </p>
           </>
         ) : (
           <>
-            <div className="text-xs font-bold tracking-wider text-blue-600 uppercase">
+            <div className="text-[11px] font-bold tracking-wider text-blue-600 uppercase">
               ✨ 纯词汇强化训练（缺失真题）
             </div>
-            <p className="text-lg sm:text-xl font-bold text-slate-800 tracking-tight">
+            <p className="text-base sm:text-lg font-bold text-slate-800 tracking-tight">
               请在下方 6 个选项中选择 2 个等价的单词
             </p>
           </>
@@ -74,7 +74,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       </div>
 
       {/* Options Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
         {question.options.map((option) => {
           const isSelected = currentSelections.includes(option);
           const isCorrectAnswer = question.answers.some(

@@ -57,9 +57,9 @@ export const QuizPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8 space-y-6 pb-20">
+    <div className="h-screen max-h-screen max-w-4xl mx-auto px-4 py-2 sm:py-3 flex flex-col justify-between overflow-hidden select-none">
       {/* Top Fixed Progress Bar */}
-      <div className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur-md pt-3 pb-4 border-b border-slate-200/50 mb-6">
+      <div className="shrink-0 w-full pt-1 pb-2 border-b border-slate-200/60 bg-slate-50/95 backdrop-blur-sm">
         <ProgressBar
           currentIndex={currentQuestionIndex}
           totalQuestions={questionQueue.length}
@@ -68,23 +68,27 @@ export const QuizPage: React.FC = () => {
         />
       </div>
 
-      {/* Main Quiz Card */}
-      <QuizCard
-        question={currentQuestion}
-        currentSelections={currentSelections}
-        answerStatus={answerStatus}
-        onOptionSelect={handleOptionSelect}
-        onNextQuestion={nextQuestion}
-      />
+      {/* Main Quiz Card Area */}
+      <div className="flex-1 flex flex-col justify-center min-h-0 py-2 sm:py-3 overflow-y-auto scrollbar-none">
+        <QuizCard
+          question={currentQuestion}
+          currentSelections={currentSelections}
+          answerStatus={answerStatus}
+          onOptionSelect={handleOptionSelect}
+          onNextQuestion={nextQuestion}
+        />
+      </div>
 
-      {/* Bottom Actions */}
-      <QuizActions
-        currentIndex={currentQuestionIndex}
-        answerStatus={answerStatus}
-        onMarkUnknown={markUnknown}
-        onPreviousQuestion={previousQuestion}
-        onExit={exitPractice}
-      />
+      {/* Bottom Fixed Actions */}
+      <div className="shrink-0 w-full pt-1.5 pb-2 bg-slate-50/95 backdrop-blur-sm border-t border-slate-100">
+        <QuizActions
+          currentIndex={currentQuestionIndex}
+          answerStatus={answerStatus}
+          onMarkUnknown={markUnknown}
+          onPreviousQuestion={previousQuestion}
+          onExit={exitPractice}
+        />
+      </div>
     </div>
   );
 };

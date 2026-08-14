@@ -18,26 +18,26 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   const isRetryQuestion = currentQ && completedStatus[currentQ.id] === 'yellow';
 
   return (
-    <div className="w-full space-y-2.5">
+    <div className="w-full space-y-2">
       {/* Header Info */}
-      <div className="flex items-center justify-between text-xs sm:text-sm font-medium text-slate-600">
+      <div className="flex items-center justify-between text-xs font-medium text-slate-600">
         <div className="flex items-center space-x-2">
           {isRetryQuestion ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-bold border border-rose-200">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold border border-rose-200">
               错题重做
             </span>
           ) : (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold border border-blue-200">
               练习进度
             </span>
           )}
           <span>
-            第 <strong className="text-slate-900 font-bold text-base">{currentIndex + 1}</strong> / {totalQuestions} 题
+            第 <strong className="text-slate-900 font-bold text-sm sm:text-base">{currentIndex + 1}</strong> / {totalQuestions} 题
           </span>
         </div>
 
         {/* Status Legend */}
-        <div className="flex items-center space-x-3 text-[11px] sm:text-xs text-slate-500 font-medium">
+        <div className="flex items-center space-x-3 text-[11px] text-slate-500 font-medium">
           <span className="flex items-center space-x-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
             <span>一次通过</span>
@@ -50,7 +50,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
       </div>
 
       {/* Segmented Progress Bar */}
-      <div className="flex gap-1.5 h-2 w-full">
+      <div className="flex gap-1.5 h-1.5 w-full">
         {questionQueue.map((q, idx) => {
           const status = completedStatus[q.id];
           const isCurrent = idx === currentIndex;
