@@ -50,14 +50,19 @@ export const useQuizStore = create<QuizState>()(
       appStage: 'selection',
 
       startPractice: (selectedWords, wordList = []) => {
+        const t0 = performance.now();
+        console.time('⏱️ startPractice Total');
         const { allQuestions } = get();
+
         const result = generateQuestionQueue(selectedWords, allQuestions, wordList, false);
 
         if (!result.success || !result.questions) {
           set({ missingWordError: result.error || null });
+          console.timeEnd('⏱️ startPractice Total');
           return false;
         }
 
+        const tState0 = performance.now();
         set({
           missingWordError: null,
           questionQueue: result.questions,
@@ -67,6 +72,10 @@ export const useQuizStore = create<QuizState>()(
           answerStatus: 'idle',
           appStage: 'quiz',
         });
+        const stateTime = (performance.now() - tState0).toFixed(2);
+        const totalTime = (performance.now() - t0).toFixed(2);
+        console.log(`[Perf Log] ⚡ Zustand state set() took ${stateTime}ms | Total startPractice took ${totalTime}ms`);
+        console.timeEnd('⏱️ startPractice Total');
 
         return true;
       },

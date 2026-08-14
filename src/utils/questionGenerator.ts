@@ -230,7 +230,11 @@ export function generateQuestionQueue(
   wordList: WordEntry[] = [],
   allowSynthetic: boolean = false
 ): QuestionGenerationResult {
+  const startTime = performance.now();
+  console.time('⏱️ generateQuestionQueueTotal');
+
   if (!selectedWords || selectedWords.length === 0) {
+    console.timeEnd('⏱️ generateQuestionQueueTotal');
     return {
       success: false,
       error: {
@@ -243,31 +247,51 @@ export function generateQuestionQueue(
   const selectedQuestions: QuizQuestion[] = [];
   const missingWords: string[] = [];
 
-  // 1. Build the complete pool of words known by the user (selected words + their equivalents)
+  // 1. Build wordList fast lookup map (word -> WordEntry)
+  const wordMap = new Map<string, WordEntry>();
+  wordList.forEach((w) => {
+    wordMap.set(w.word.toLowerCase().trim(), w);
+  });
+
+  // 2. Build userKnownWords Set & userKnownStems Set ONCE
   const userKnownWords = new Set<string>();
+  const userKnownStems = new Set<string>();
+
+  const addWordToKnownSets = (wStr: string) => {
+    const wLower = wStr.toLowerCase().trim();
+    if (!wLower) return;
+    userKnownWords.add(wLower);
+    const norm = normalizeWordString(wLower);
+    if (norm) {
+      userKnownStems.add(norm);
+      getWordStemsTS(norm).forEach((s) => userKnownStems.add(s));
+    }
+  };
+
   for (const selWord of selectedWords) {
-    const selLower = selWord.toLowerCase().trim();
-    userKnownWords.add(selLower);
-    const entry = wordList.find((w) => w.word.toLowerCase().trim() === selLower);
+    addWordToKnownSets(selWord);
+    const entry = wordMap.get(selWord.toLowerCase().trim());
     if (entry) {
-      entry.equivalents.forEach((eq) => userKnownWords.add(eq.toLowerCase().trim()));
+      entry.equivalents.forEach((eq) => addWordToKnownSets(eq));
     }
   }
 
-  // Helper: check if a target answer string (or base) is known by the user
+  // Fast O(1) answer known check
   const isAnswerKnown = (ansStr: string, ansBaseStr?: string): boolean => {
     const targets = [ansBaseStr, ansStr].filter(Boolean) as string[];
     for (const target of targets) {
       const tLower = target.toLowerCase().trim();
       if (userKnownWords.has(tLower)) return true;
-      if (Array.from(userKnownWords).some((known) => isWordMatchOption(known, target))) {
-        return true;
+      const normT = normalizeWordString(target);
+      if (userKnownStems.has(normT)) return true;
+      const tStems = getWordStemsTS(normT);
+      for (const ts of tStems) {
+        if (userKnownStems.has(ts)) return true;
       }
     }
     return false;
   };
 
-  // Helper: check if EVERY correct answer in a question is known by the user
   const areAllQuestionAnswersKnown = (q: QuizQuestion): boolean => {
     if (!q.answers || q.answers.length === 0) return false;
     return q.answers.every((ans, idx) => {
@@ -276,52 +300,71 @@ export function generateQuestionQueue(
     });
   };
 
+  // 3. Pre-filter validQuestions ONCE
+  const validQuestions = allQuestions.filter((q) => areAllQuestionAnswersKnown(q));
+
+  // 4. Pre-build reverse lookup index (targetWordNorm -> QuizQuestion[]) for validQuestions
+  const targetToQuestionsIndex = new Map<string, QuizQuestion[]>();
+  const addQuestionToIndex = (targetStr: string, q: QuizQuestion) => {
+    const norm = normalizeWordString(targetStr);
+    if (!norm) return;
+    const existing = targetToQuestionsIndex.get(norm) || [];
+    existing.push(q);
+    targetToQuestionsIndex.set(norm, existing);
+
+    // Also index stems
+    getWordStemsTS(norm).forEach((stem) => {
+      const sExisting = targetToQuestionsIndex.get(stem) || [];
+      sExisting.push(q);
+      targetToQuestionsIndex.set(stem, sExisting);
+    });
+  };
+
+  validQuestions.forEach((q) => {
+    q.answers.forEach((ans) => addQuestionToIndex(ans, q));
+    if (q.answerBases) {
+      q.answerBases.forEach((b) => addQuestionToIndex(b, q));
+    }
+  });
+
+  // Fast matching lookup using pre-built index
+  const getMatchingQuestions = (targetStr: string): QuizQuestion[] => {
+    const norm = normalizeWordString(targetStr);
+    const setOfQ = new Set<QuizQuestion>();
+    const list1 = targetToQuestionsIndex.get(norm);
+    if (list1) list1.forEach((q) => setOfQ.add(q));
+
+    getWordStemsTS(norm).forEach((stem) => {
+      const list2 = targetToQuestionsIndex.get(stem);
+      if (list2) list2.forEach((q) => setOfQ.add(q));
+    });
+
+    return Array.from(setOfQ);
+  };
+
+  // 5. Match questions for selectedWords
   for (const word of selectedWords) {
     const lowerWord = word.toLowerCase().trim();
-
-    // Get word entry to retrieve equivalent synonyms
-    const entry = wordList.find((w) => w.word.toLowerCase().trim() === lowerWord);
+    const entry = wordMap.get(lowerWord);
     const equivalents = new Set<string>();
     if (entry) {
       entry.equivalents.forEach((eq) => equivalents.add(eq.toLowerCase().trim()));
     }
 
-    // Helper: check if a question's correct answers/bases match a target word string strictly
-    const questionMatchesTarget = (q: QuizQuestion, targetStr: string): boolean => {
-      if (q.answerBases && q.answerBases.length > 0) {
-        const baseMatch = q.answerBases.some((b) => {
-          const bNorm = b.toLowerCase().trim();
-          if (bNorm === targetStr) return true;
-          return isWordMatchOption(targetStr, b);
-        });
-        if (baseMatch) return true;
-      }
-
-      return q.answers.some((ans) => {
-        const ansNorm = ans.toLowerCase().trim();
-        if (ansNorm === targetStr) return true;
-        return isWordMatchOption(targetStr, ans);
+    const priority1Questions = getMatchingQuestions(lowerWord);
+    let priority2Questions: QuizQuestion[] = [];
+    if (priority1Questions.length === 0) {
+      const p2Set = new Set<QuizQuestion>();
+      equivalents.forEach((eq) => {
+        getMatchingQuestions(eq).forEach((q) => p2Set.add(q));
       });
-    };
-
-    // Filter candidate questions where ALL correct answers are known by the user
-    const validQuestions = allQuestions.filter((q) => areAllQuestionAnswersKnown(q));
-
-    // Priority 1: Valid questions where the PRIMARY SELECTED WORD itself (e.g. "mitigate") is one of the CORRECT ANSWERS
-    const priority1Questions = validQuestions.filter((q) => questionMatchesTarget(q, lowerWord));
-
-    // Priority 2: Valid questions where one of the EQUIVALENT SYNONYMS (e.g. "abate", "curtail", "temper") is one of the CORRECT ANSWERS
-    const priority2Questions = validQuestions.filter((q) => {
-      return Array.from(equivalents).some((eq) => questionMatchesTarget(q, eq));
-    });
+      priority2Questions = Array.from(p2Set);
+    }
 
     let selectedQ: QuizQuestion | null = null;
-
     if (priority1Questions.length > 0) {
-      // Pick 1 random question from Priority 1 (Primary selected word is correct answer)
       selectedQ = priority1Questions[Math.floor(Math.random() * priority1Questions.length)];
     } else if (priority2Questions.length > 0) {
-      // Pick 1 random question from Priority 2 (Equivalent synonym is correct answer)
       selectedQ = priority2Questions[Math.floor(Math.random() * priority2Questions.length)];
     }
 
@@ -337,6 +380,12 @@ export function generateQuestionQueue(
   }
 
   if (missingWords.length > 0 && !allowSynthetic) {
+    const duration = (performance.now() - startTime).toFixed(2);
+    console.warn(`[Perf] generateQuestionQueue failed (missing words) in ${duration}ms`, {
+      selectedCount: selectedWords.length,
+      missingCount: missingWords.length,
+    });
+    console.timeEnd('⏱️ generateQuestionQueueTotal');
     return {
       success: false,
       missingWords,
@@ -347,12 +396,17 @@ export function generateQuestionQueue(
     };
   }
 
-  // Shuffle selected questions
   const shuffledQueue = shuffleArray(selectedQuestions);
+  const duration = (performance.now() - startTime).toFixed(2);
+  console.log(`[Perf Log] 🚀 generateQuestionQueue finished in ${duration}ms!`, {
+    selectedWordsCount: selectedWords.length,
+    generatedQueueCount: shuffledQueue.length,
+    validQuestionsPool: validQuestions.length,
+  });
+  console.timeEnd('⏱️ generateQuestionQueueTotal');
 
   return {
     success: true,
     questions: shuffledQueue,
-    missingWords,
   };
 }
