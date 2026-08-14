@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { HelpCircle } from 'lucide-react';
 import { QuizQuestion, AnswerStatus } from '../../types';
 import { AnswerOption } from './AnswerOption';
 import { WordExplanation } from './WordExplanation';
@@ -10,6 +11,7 @@ interface QuizCardProps {
   answerStatus: AnswerStatus;
   onOptionSelect: (option: string) => void;
   onNextQuestion: () => void;
+  onMarkUnknown: () => void;
 }
 
 export const QuizCard: React.FC<QuizCardProps> = ({
@@ -18,6 +20,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   answerStatus,
   onOptionSelect,
   onNextQuestion,
+  onMarkUnknown,
 }) => {
   // Format stem with styled fill-in-the-blank highlight
   const renderStem = (stem: string) => {
@@ -37,6 +40,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   };
 
   const isWrong = answerStatus === 'wrong';
+  const isEvaluated = answerStatus === 'correct' || answerStatus === 'wrong' || answerStatus === 'unknown';
 
   return (
     <motion.div
@@ -93,6 +97,17 @@ export const QuizCard: React.FC<QuizCardProps> = ({
           );
         })}
       </div>
+
+      {/* "Don't Know" Button directly under options grid */}
+      {!isEvaluated && (
+        <button
+          onClick={onMarkUnknown}
+          className="w-full py-2.5 sm:py-3 px-4 bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl transition-colors flex items-center justify-center space-x-2 shadow-xs active:scale-[0.99]"
+        >
+          <HelpCircle className="w-4 h-4 text-amber-500" />
+          <span>不认识</span>
+        </button>
+      )}
 
       {/* Explanation Feedback Card */}
       <WordExplanation
