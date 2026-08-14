@@ -85,6 +85,7 @@ export const QuizPage: React.FC = () => {
         <QuizActions
           currentIndex={currentQuestionIndex}
           answerStatus={answerStatus}
+          onMarkUnknown={markUnknown}
           onPreviousQuestion={previousQuestion}
           onExit={exitPractice}
         />
