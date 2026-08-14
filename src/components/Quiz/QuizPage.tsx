@@ -59,7 +59,7 @@ export const QuizPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8 space-y-6 pb-20">
       {/* Top Fixed Progress Bar */}
-      <div className="sticky top-16 z-20 bg-slate-50/90 backdrop-blur-md pt-2 pb-4 border-b border-slate-200/50">
+      <div className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur-md pt-3 pb-4 border-b border-slate-200/50 mb-6">
         <ProgressBar
           currentIndex={currentQuestionIndex}
           totalQuestions={questionQueue.length}
