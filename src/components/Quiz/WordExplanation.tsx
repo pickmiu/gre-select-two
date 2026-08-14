@@ -103,7 +103,7 @@ export const WordExplanation: React.FC<WordExplanationProps> = ({
       onClick={onNext}
     >
       <div
-        className="bg-slate-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl max-w-md w-full border border-slate-800 space-y-3 animate-scale-up max-h-[85vh] overflow-y-auto"
+        className="bg-slate-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl max-w-md w-full border border-slate-800 space-y-3 animate-scale-up max-h-[85vh] overflow-y-auto scrollbar-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Status & Title Header */}
