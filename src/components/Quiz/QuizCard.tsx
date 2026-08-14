@@ -63,8 +63,8 @@ export const QuizCard: React.FC<QuizCardProps> = ({
           </>
         ) : (
           <>
-            <div className="text-xs font-bold tracking-wider text-indigo-600 uppercase">
-              ✨ 纯词汇强化训练 (6 选 2)
+            <div className="text-xs font-bold tracking-wider text-blue-600 uppercase">
+              ✨ 纯词汇强化训练（缺失真题）
             </div>
             <p className="text-lg sm:text-xl font-bold text-slate-800 tracking-tight">
               请在下方 6 个选项中选择 2 个互为同义 / 等价的单词
