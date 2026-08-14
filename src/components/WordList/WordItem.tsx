@@ -47,20 +47,23 @@ export const WordItem: React.FC<WordItemProps> = React.memo(({
               {word}
             </h3>
 
-            {/* Equivalent Words connected by '=' */}
+            {/* Single '=' sign if equivalents exist */}
+            {equivalents.length > 0 && (
+              <span className="text-slate-400 font-bold text-xs sm:text-sm select-none mx-0.5">=</span>
+            )}
+
+            {/* Equivalent Words Pills */}
             {equivalents.map((eq, idx) => (
-              <React.Fragment key={idx}>
-                <span className="text-slate-400 font-bold text-xs sm:text-sm select-none">=</span>
-                <span
-                  className={`inline-block px-2.5 py-0.5 text-xs sm:text-sm font-mono font-semibold rounded-lg ${
-                    isSelected
-                      ? 'bg-white text-blue-900 border border-blue-200/80 shadow-xs'
-                      : 'bg-slate-100 text-slate-700 border border-slate-200/50'
-                  }`}
-                >
-                  {eq}
-                </span>
-              </React.Fragment>
+              <span
+                key={idx}
+                className={`inline-block px-2.5 py-0.5 text-xs sm:text-sm font-mono font-semibold rounded-lg ${
+                  isSelected
+                    ? 'bg-white text-blue-900 border border-blue-200/80 shadow-xs'
+                    : 'bg-slate-100 text-slate-700 border border-slate-200/50'
+                }`}
+              >
+                {eq}
+              </span>
             ))}
 
             {/* Learned Badge */}
