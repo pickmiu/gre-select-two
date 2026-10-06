@@ -25,26 +25,17 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   onNext,
   onMarkUnknown,
 }) => {
-  // Format stem with styled fill-in-the-blank highlight
+  // Format stem with styled fill-in-the-blank underline
   const renderStem = (stem: string) => {
     const parts = stem.split(/_{2,}/);
     if (parts.length <= 1) {
       return <span>{stem}</span>;
     }
 
-    const hasSelection = currentSelections.length > 0;
-    const selectionText = currentSelections.join(' / ');
-
     return (
       <>
         {parts[0]}
-        {hasSelection ? (
-          <span className="inline-flex items-baseline justify-center px-2 py-0.5 mx-1 text-base sm:text-lg font-bold text-blue-600 bg-blue-50/90 rounded-lg border border-blue-200/80 align-baseline">
-            {selectionText}
-          </span>
-        ) : (
-          <span className="inline-block w-12 sm:w-16 mx-1 border-b-2 border-slate-700 align-baseline" />
-        )}
+        <span className="inline-block w-14 sm:w-16 mx-1 border-b-2 border-slate-700 align-baseline" />
         {parts[1]}
       </>
     );
