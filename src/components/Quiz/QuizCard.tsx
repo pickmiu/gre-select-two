@@ -122,7 +122,6 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               transition={{ duration: isShaking ? 0.45 : 0.2 }}
               onClick={handleStemClick}
               className="text-center py-1 cursor-pointer select-none group w-full"
-              title={hasOriginalQuestion ? "点击切换为原题内容" : "未在题库中匹配到原题"}
             >
               <div className="inline-flex items-center justify-center gap-1.5 relative max-w-full">
                 <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight group-hover:text-blue-900 transition-colors">
@@ -172,14 +171,6 @@ export const QuizCard: React.FC<QuizCardProps> = ({
                   </div>
                 )}
               </div>
-
-              {hasOriginalQuestion && (
-                <div className="mt-1 text-center">
-                  <span className="text-[11px] text-slate-400 group-hover:text-blue-500 transition-colors">
-                    点击查看原题内容
-                  </span>
-                </div>
-              )}
             </motion.div>
           ) : (
             <motion.div
@@ -190,19 +181,10 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               transition={{ duration: 0.2 }}
               onClick={showChineseStem && hasOriginalQuestion ? handleStemClick : undefined}
               className={`w-full ${showChineseStem && hasOriginalQuestion ? "cursor-pointer group" : ""}`}
-              title={showChineseStem && hasOriginalQuestion ? "点击切回中文释义" : undefined}
             >
               <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
                 {renderStem(question.stem)}
               </p>
-              {showChineseStem && hasOriginalQuestion && (
-                <div className="mt-2 text-center">
-                  <span className="text-[11px] font-medium text-blue-600 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/60 px-2 py-0.5 rounded-full inline-flex items-center gap-1 transition-colors">
-                    <span>原题内容</span>
-                    <span className="text-blue-400">· 点击切回中文</span>
-                  </span>
-                </div>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
