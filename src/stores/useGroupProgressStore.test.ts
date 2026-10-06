@@ -125,4 +125,14 @@ describe('useGroupProgressStore', () => {
     useGroupProgressStore.getState().startGroup(mockGroup, [], mockPairs);
     expect(useGroupProgressStore.getState().elapsedTime).toBe(45);
   });
+
+  it('toggles showChineseStem setting correctly', () => {
+    expect(useGroupProgressStore.getState().showChineseStem).toBe(false);
+
+    useGroupProgressStore.getState().setShowChineseStem(true);
+    expect(useGroupProgressStore.getState().showChineseStem).toBe(true);
+
+    useGroupProgressStore.getState().setShowChineseStem(false);
+    expect(useGroupProgressStore.getState().showChineseStem).toBe(false);
+  });
 });

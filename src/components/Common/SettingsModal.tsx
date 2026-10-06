@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, X, RotateCcw, Upload, BookOpen, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Settings, X, RotateCcw, Upload, BookOpen, Sparkles, CheckCircle2, Sliders } from 'lucide-react';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
 import { useWordStore } from '../../stores/useWordStore';
 import { useQuizStore } from '../../stores/useQuizStore';
@@ -17,6 +17,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
 
+  const showChineseStem = useGroupProgressStore((s) => s.showChineseStem);
+  const setShowChineseStem = useGroupProgressStore((s) => s.setShowChineseStem);
   const resetAllProgress = useGroupProgressStore((s) => s.resetAll);
   const resetWords = useWordStore((s) => s.resetWordsToDefault);
   const resetQuestions = useQuizStore((s) => s.resetQuestionsToDefault);
@@ -109,6 +111,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   每组答完后进入结算页，集中查看错误率、做错单词清单，以及本次完整的 30 个单词对。
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Section: Practice Preferences */}
+          <div className="space-y-2.5 pt-1">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+              <Sliders className="w-3.5 h-3.5 text-blue-500" />
+              <span>练习偏好设置</span>
+            </h4>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 flex items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="font-bold text-sm text-slate-800">
+                  题干仅展示中文释义
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  仍结合真题生成 6 个选项，但题干直接显示中文释义，适合高频速刷
+                </p>
+              </div>
+
+              {/* iOS-style Toggle Switch */}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showChineseStem}
+                onClick={() => setShowChineseStem(!showChineseStem)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  showChineseStem ? 'bg-blue-600' : 'bg-slate-300'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                    showChineseStem ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
             </div>
           </div>
 

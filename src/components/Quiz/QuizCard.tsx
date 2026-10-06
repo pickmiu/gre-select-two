@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { QuizQuestion } from '../../types';
 import { AnswerOption } from './AnswerOption';
+import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
 
 interface QuizCardProps {
   question: QuizQuestion;
@@ -25,6 +26,13 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   onNext,
   onMarkUnknown,
 }) => {
+  const showChineseStem = useGroupProgressStore((s) => s.showChineseStem);
+
+  // If showChineseStem is enabled, display Chinese definition directly
+  const rawStem = showChineseStem
+    ? (question.vocabPair?.definition || question.stem)
+    : question.stem;
+
   // Format stem with styled fill-in-the-blank underline
   const renderStem = (stem: string) => {
     const parts = stem.split(/_{2,}/);
@@ -41,7 +49,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     );
   };
 
-  const isChineseStem = /[\u4e00-\u9fa5]/.test(question.stem);
+  const isChineseStem = /[\u4e00-\u9fa5]/.test(rawStem);
 
   return (
     <motion.div
@@ -56,13 +64,13 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         {isChineseStem ? (
           <div className="text-center py-1">
             <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              {question.stem}
+              {rawStem}
             </p>
           </div>
         ) : (
           <div>
             <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
-              {renderStem(question.stem)}
+              {renderStem(rawStem)}
             </p>
           </div>
         )}

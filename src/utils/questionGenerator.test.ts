@@ -33,6 +33,7 @@ describe('generateGroupQuizQueue', () => {
     expect(queue[0].options.length).toBe(6);
     expect(queue[0].answers).toEqual(['belies', 'masks']);
     expect(queue[0].vocabPair?.id).toBe('bb-1');
+    expect(queue[0].vocabPair?.definition).toBe('掩饰; 掩盖');
   });
 
   it('falls back to pure Chinese stem without prefix when real question is missing', () => {
