@@ -15,6 +15,8 @@ anomaly,aberration,异常`;
       word2: 'abate',
       allEquivalents: ['abate', 'curtail', 'temper'],
       definition: '缓解',
+      definition1: '缓解',
+      definition2: '缓解',
     });
     expect(pairs[1]).toEqual({
       id: 'zw-2',
@@ -22,6 +24,8 @@ anomaly,aberration,异常`;
       word2: 'aberration',
       allEquivalents: ['aberration'],
       definition: '异常',
+      definition1: '异常',
+      definition2: '异常',
     });
   });
 
@@ -38,6 +42,8 @@ singular,"独特的; 单数的",unique,"独特的; 独一无二的"`;
       word2: 'yield to',
       allEquivalents: ['yield to'],
       definition: '屈服于',
+      definition1: '屈服于',
+      definition2: '屈服于',
     });
     expect(pairs[1]).toEqual({
       id: 'bb-2',
@@ -45,6 +51,8 @@ singular,"独特的; 单数的",unique,"独特的; 独一无二的"`;
       word2: 'unique',
       allEquivalents: ['unique'],
       definition: '独特的; 单数的',
+      definition1: '独特的; 单数的',
+      definition2: '独特的; 独一无二的',
     });
   });
 

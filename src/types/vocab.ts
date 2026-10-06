@@ -9,6 +9,8 @@ export interface VocabPair {
   word2: string;
   allEquivalents?: string[];
   definition: string;
+  definition1?: string;
+  definition2?: string;
 }
 
 export interface VocabGroup {

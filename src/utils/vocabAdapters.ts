@@ -42,12 +42,16 @@ export function parseZhangweiCSV(csvText: string): VocabPair[] {
 
     const word2 = allEquivalents.length > 0 ? allEquivalents[0] : rawWord;
 
+    const def = cleanDefinition(rawDef) || '暂无释义';
+
     pairs.push({
       id: `zw-${index + 1}`,
       word1: rawWord,
       word2,
       allEquivalents: allEquivalents.length > 0 ? allEquivalents : [word2],
-      definition: cleanDefinition(rawDef) || '暂无释义',
+      definition: def,
+      definition1: def,
+      definition2: def,
     });
   }
 
@@ -90,6 +94,8 @@ export function parseBbgreCSV(csvText: string): VocabPair[] {
       word2,
       allEquivalents: [word2],
       definition: primaryDef || '暂无释义',
+      definition1: def1 || def2 || '暂无释义',
+      definition2: def2 || def1 || '暂无释义',
     });
   }
 
