@@ -152,21 +152,20 @@ export const QuizCard: React.FC<QuizCardProps> = ({
                     <AnimatePresence>
                       {showTooltip && (
                         <motion.div
-                          initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                          initial={{ opacity: 0, y: 6, scale: 0.96 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                          transition={{ duration: 0.15 }}
+                          exit={{ opacity: 0, y: 4, scale: 0.96 }}
+                          transition={{ duration: 0.15, ease: 'easeOut' }}
                           onClick={(e) => e.stopPropagation()}
-                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-30 w-64 sm:w-72 p-3 bg-slate-900/95 backdrop-blur-sm text-slate-100 text-xs rounded-xl shadow-xl border border-slate-700/60 leading-relaxed text-left pointer-events-auto"
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-30 w-64 sm:w-72 p-3.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/90 text-left pointer-events-auto"
                         >
-                          <p className="font-bold text-amber-300 mb-1 flex items-center gap-1.5">
-                            <span>题库未收录原题</span>
-                          </p>
-                          <p className="text-slate-300">
+                          <div className="flex items-center space-x-1.5 pb-1.5 border-b border-slate-100">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                            <span className="font-bold text-xs text-slate-800">题库未收录原题</span>
+                          </div>
+                          <p className="text-xs text-slate-500 leading-relaxed pt-1.5 font-normal">
                             本词对未在 GRE 真题库中匹配到原题，选项为系统自动生成的词汇干扰项。
                           </p>
-                          {/* Downward pointer caret */}
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900/95" />
                         </motion.div>
                       )}
                     </AnimatePresence>
