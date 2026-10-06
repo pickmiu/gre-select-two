@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BookOpen, Upload, RotateCcw, Sparkles } from 'lucide-react';
 import { useWordStore } from '../../stores/useWordStore';
 import { useQuizStore } from '../../stores/useQuizStore';
+import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
 import { CSVModal } from './CSVModal';
 import { ResetModal } from './ResetModal';
 
@@ -10,12 +11,14 @@ export const Header: React.FC = () => {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const resetWords = useWordStore((s) => s.resetWordsToDefault);
   const resetQuestions = useQuizStore((s) => s.resetQuestionsToDefault);
-  const appStage = useQuizStore((s) => s.appStage);
-  const exitPractice = useQuizStore((s) => s.exitPractice);
+  const resetGroupProgress = useGroupProgressStore((s) => s.resetAll);
+  const appStage = useGroupProgressStore((s) => s.appStage);
+  const exitSession = useGroupProgressStore((s) => s.exitSession);
 
   const handleConfirmReset = () => {
     resetWords();
     resetQuestions();
+    resetGroupProgress();
   };
 
   return (
@@ -24,7 +27,7 @@ export const Header: React.FC = () => {
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo & Title */}
           <div
-            onClick={() => appStage !== 'selection' && exitPractice()}
+            onClick={() => appStage !== 'selection' && exitSession()}
             className="flex items-center space-x-2.5 cursor-pointer group"
           >
             <img
