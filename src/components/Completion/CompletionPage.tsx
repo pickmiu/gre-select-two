@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
+  Award,
+  Sparkles,
   CheckCircle2,
   ArrowLeft,
   BookOpen,
@@ -117,14 +119,23 @@ export const CompletionPage: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12 space-y-6 sm:space-y-8 animate-fade-in pb-16">
-      {/* Header */}
-      <div className="text-center space-y-1.5 pt-2">
-        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-          练习完成
-        </h2>
-        <p className="text-slate-500 text-xs sm:text-sm">
-          共完成 {totalQuestions} 道题
-        </p>
+      {/* Celebration Header */}
+      <div className="text-center space-y-3">
+        <div className="relative inline-block">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-3xl bg-gradient-to-tr from-amber-400 via-emerald-400 to-blue-500 flex items-center justify-center text-white shadow-xl shadow-emerald-500/20">
+            <Award className="w-12 h-12" />
+          </div>
+          <Sparkles className="w-7 h-7 text-amber-400 absolute -top-2 -right-2 animate-bounce" />
+        </div>
+
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            练习完成
+          </h2>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1">
+            共完成 {totalQuestions} 道题
+          </p>
+        </div>
       </div>
 
       {/* Metrics Section: 3-column Grid + Overtime/Pace Banner */}
@@ -238,10 +249,10 @@ export const CompletionPage: React.FC = () => {
                     : 'bg-emerald-50/30 border-emerald-200/70 hover:bg-emerald-50/60'
                 }`}
               >
-                {/* Left: Index badge + Word Pair with respective definitions */}
-                <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                {/* Left: Index badge + Word Pair on top line, Definitions on bottom line */}
+                <div className="flex items-start space-x-3 min-w-0 flex-1">
                   <span
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-mono font-bold shrink-0 ${
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-mono font-bold shrink-0 mt-0.5 ${
                       item.isUnknown
                         ? 'bg-amber-100 text-amber-800'
                         : item.isWrong
@@ -252,21 +263,19 @@ export const CompletionPage: React.FC = () => {
                     {item.originalIndex}
                   </span>
 
-                  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 font-mono text-sm leading-relaxed">
-                    <div className="inline-flex items-baseline flex-wrap gap-1">
-                      <span className="font-extrabold text-slate-900">{item.word1}</span>
-                      <span className="text-xs font-sans text-slate-500 font-medium">
-                        ({item.def1})
-                      </span>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    {/* Line 1: English Word Pair */}
+                    <div className="flex items-center space-x-2 font-mono text-sm leading-tight">
+                      <span className="font-extrabold text-slate-900 tracking-tight">{item.word1}</span>
+                      <span className="text-slate-400 font-bold">=</span>
+                      <span className="font-extrabold text-blue-600 tracking-tight">{item.word2}</span>
                     </div>
 
-                    <span className="text-slate-400 font-bold">=</span>
-
-                    <div className="inline-flex items-baseline flex-wrap gap-1">
-                      <span className="font-extrabold text-blue-600">{item.word2}</span>
-                      <span className="text-xs font-sans text-blue-600/90 font-medium">
-                        ({item.def2})
-                      </span>
+                    {/* Line 2: Chinese Definitions */}
+                    <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-xs font-sans text-slate-500 font-medium leading-normal">
+                      <span className="text-slate-600">({item.def1})</span>
+                      <span className="text-slate-300 font-bold">=</span>
+                      <span className="text-blue-600/90">({item.def2})</span>
                     </div>
                   </div>
                 </div>
