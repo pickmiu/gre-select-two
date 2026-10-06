@@ -3,14 +3,12 @@ import { motion } from 'framer-motion';
 import { HelpCircle } from 'lucide-react';
 import { QuizQuestion, AnswerStatus } from '../../types';
 import { AnswerOption } from './AnswerOption';
-import { WordExplanation } from './WordExplanation';
 
 interface QuizCardProps {
   question: QuizQuestion;
   currentSelections: string[];
   answerStatus: AnswerStatus;
   onOptionSelect: (option: string) => void;
-  onNextQuestion: () => void;
   onMarkUnknown?: () => void;
 }
 
@@ -19,7 +17,6 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   currentSelections,
   answerStatus,
   onOptionSelect,
-  onNextQuestion,
   onMarkUnknown,
 }) => {
   // Format stem with styled fill-in-the-blank highlight
@@ -47,7 +44,8 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     );
   };
 
-  const isWrong = answerStatus === 'wrong';
+  const isWrong = answerStatus === 'wrong' || answerStatus === 'unknown';
+  const isChineseStem = /[\u4e00-\u9fa5]/.test(question.stem);
 
   return (
     <motion.div
@@ -58,29 +56,29 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         y: 0,
         x: isWrong ? [0, -10, 10, -10, 10, 0] : 0,
       }}
-      transition={{ duration: isWrong ? 0.4 : 0.25 }}
+      transition={{ duration: isWrong ? 0.35 : 0.2 }}
       className="w-full max-w-2xl mx-auto space-y-3 sm:space-y-4"
     >
       {/* Stem Card */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-card border border-slate-200/80 space-y-1.5">
-        {question.stem && question.stem.trim() !== '' ? (
-          <>
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80">
+        {isChineseStem ? (
+          <div className="text-center space-y-1">
             <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               GRE 填空 6 选 2
+            </div>
+            <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight pt-1">
+              {question.stem}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+              GRE 填空 6 选 2 真题
             </div>
             <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
               {renderStem(question.stem)}
             </p>
-          </>
-        ) : (
-          <>
-            <div className="text-[11px] font-bold tracking-wider text-blue-600 uppercase">
-              （缺失对应真题）
-            </div>
-            <p className="text-base sm:text-lg font-bold text-slate-800 tracking-tight">
-              请在下方 6 个选项中选择 2 个等价的单词
-            </p>
-          </>
+          </div>
         )}
       </div>
 
@@ -105,8 +103,8 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         })}
       </div>
 
-      {/* "Don't Know" Button - Placed right below options */}
-      {answerStatus !== 'correct' && answerStatus !== 'wrong' && answerStatus !== 'unknown' && onMarkUnknown && (
+      {/* "Don't Know" Button */}
+      {answerStatus === 'idle' && onMarkUnknown && (
         <button
           onClick={onMarkUnknown}
           className="w-full py-2.5 sm:py-3 px-6 bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl transition-all flex items-center justify-center space-x-2 shadow-xs active:scale-[0.99] border border-slate-200/60"
@@ -115,13 +113,6 @@ export const QuizCard: React.FC<QuizCardProps> = ({
           <span>不认识</span>
         </button>
       )}
-
-      {/* Explanation Feedback Card */}
-      <WordExplanation
-        question={question}
-        answerStatus={answerStatus}
-        onNext={onNextQuestion}
-      />
     </motion.div>
   );
 };
