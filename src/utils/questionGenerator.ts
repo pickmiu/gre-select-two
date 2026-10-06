@@ -1,4 +1,4 @@
-import { QuizQuestion, WordEntry, MissingWordError } from '../types';
+import { QuizQuestion, WordEntry, MissingWordError, VocabPair } from '../types';
 
 /**
  * Fisher-Yates Shuffle
@@ -120,11 +120,16 @@ export function getWordStemsTS(word: string): Set<string> {
 
   if (norm.endsWith('ies') && norm.length > 4) {
     stems.add(norm.slice(0, -3) + 'y');
+    stems.add(norm.slice(0, -1));
   } else if (norm.endsWith('es') && norm.length > 3) {
     stems.add(norm.slice(0, -2));
     stems.add(norm.slice(0, -1));
   } else if (norm.endsWith('s') && !norm.endsWith('ss') && norm.length > 3) {
     stems.add(norm.slice(0, -1));
+  }
+
+  if (norm.endsWith('ie') && norm.length > 3) {
+    stems.add(norm.slice(0, -2) + 'y');
   }
 
   if (norm.endsWith('ed') && norm.length > 4) {
@@ -409,4 +414,92 @@ export function generateQuestionQueue(
     success: true,
     questions: shuffledQueue,
   };
+}
+
+/**
+ * Generate quiz questions queue for a group of VocabPair items.
+ * Prioritizes matching real questions from allQuestions.
+ * If no real question matches, falls back to pure Chinese definition stem.
+ */
+export function generateGroupQuizQueue(
+  groupPairs: VocabPair[],
+  allQuestions: QuizQuestion[],
+  allPoolPairs: VocabPair[] = []
+): QuizQuestion[] {
+  const resultQuestions: QuizQuestion[] = [];
+
+  // Build candidate distractor words pool from allPoolPairs
+  const candidatePoolWords: string[] = [];
+  const candidateSet = new Set<string>();
+  for (const p of allPoolPairs) {
+    const w1 = p.word1.trim();
+    const w2 = p.word2.trim();
+    if (w1 && !candidateSet.has(w1.toLowerCase())) {
+      candidateSet.add(w1.toLowerCase());
+      candidatePoolWords.push(w1);
+    }
+    if (w2 && !candidateSet.has(w2.toLowerCase())) {
+      candidateSet.add(w2.toLowerCase());
+      candidatePoolWords.push(w2);
+    }
+  }
+
+  for (const pair of groupPairs) {
+    const targetWords = [pair.word1, pair.word2, ...(pair.allEquivalents || [])]
+      .filter(Boolean)
+      .map((w) => w.trim());
+
+    // 1. Try to find real question where answers match target words
+    const matchingRealQuestions = allQuestions.filter((q) => {
+      if (!q.answers || q.answers.length < 2) return false;
+      const matchCount = q.answers.filter((ans, idx) => {
+        const base = q.answerBases ? q.answerBases[idx] : undefined;
+        return targetWords.some(
+          (tw) => isWordMatchOption(tw, ans) || (base && isWordMatchOption(tw, base))
+        );
+      }).length;
+      return matchCount >= 2;
+    });
+
+    if (matchingRealQuestions.length > 0) {
+      // Pick 1 matching question randomly
+      const picked = matchingRealQuestions[Math.floor(Math.random() * matchingRealQuestions.length)];
+      const cloned: QuizQuestion = {
+        ...picked,
+        options: shuffleArray(picked.options),
+        vocabPair: pair,
+      };
+      resultQuestions.push(cloned);
+    } else {
+      // 2. Pure Chinese stem fallback
+      const ans1 = pair.word1;
+      const ans2 = pair.word2;
+
+      // Exclude answers and equivalent words from distractors
+      const excludedSet = new Set<string>();
+      targetWords.forEach((tw) => excludedSet.add(tw.toLowerCase()));
+
+      const availableDistractors = candidatePoolWords.filter(
+        (cw) => !excludedSet.has(cw.toLowerCase())
+      );
+      const shuffledDistractors = shuffleArray(availableDistractors);
+      const chosenDistractors = shuffledDistractors.slice(0, 4);
+
+      while (chosenDistractors.length < 4) {
+        chosenDistractors.push(`distractor_${chosenDistractors.length + 1}`);
+      }
+
+      const options = shuffleArray([ans1, ans2, ...chosenDistractors]);
+
+      resultQuestions.push({
+        id: `fallback-${pair.id}-${Math.random().toString(36).substring(2, 7)}`,
+        stem: pair.definition, // Pure Chinese definition, no prefix
+        options,
+        answers: [ans1, ans2],
+        vocabPair: pair,
+      });
+    }
+  }
+
+  return resultQuestions;
 }

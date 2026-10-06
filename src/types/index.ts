@@ -10,6 +10,7 @@ export interface QuizQuestion {
   options: string[];
   answers: string[];
   answerBases?: string[];
+  vocabPair?: import('./vocab').VocabPair;
 }
 
 export type AppStage = 'selection' | 'quiz' | 'completion';
