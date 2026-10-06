@@ -20,7 +20,7 @@ export const AnswerOption: React.FC<AnswerOptionProps> = ({
 
   if (isSelected) {
     containerStyle =
-      'bg-blue-600 text-white border-blue-700 font-bold shadow-md shadow-blue-500/25 ring-1 ring-inset ring-blue-400/50';
+      'bg-blue-600 text-white border-blue-600 font-bold shadow-md shadow-blue-500/20';
     icon = <Check className="w-4 h-4 text-white stroke-[3] shrink-0" />;
   }
 
