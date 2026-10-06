@@ -25,7 +25,7 @@ anomaly,aberration,异常`;
     });
   });
 
-  it('parses BBGRE CSV correctly and merges definitions', () => {
+  it('parses BBGRE CSV correctly and uses first word definition', () => {
     const csv = `Word1,Definition1,Word2,Definition2
 succumb to,屈服于,yield to,屈服于
 singular,"独特的; 单数的",unique,"独特的; 独一无二的"`;
@@ -44,7 +44,7 @@ singular,"独特的; 单数的",unique,"独特的; 独一无二的"`;
       word1: 'singular',
       word2: 'unique',
       allEquivalents: ['unique'],
-      definition: '独特的; 单数的 / 独特的; 独一无二的',
+      definition: '独特的; 单数的',
     });
   });
 

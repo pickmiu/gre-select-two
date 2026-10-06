@@ -81,19 +81,15 @@ export function parseBbgreCSV(csvText: string): VocabPair[] {
     const def1 = cleanDefinition(d1Key ? row[d1Key] || '' : '');
     const def2 = cleanDefinition(d2Key ? row[d2Key] || '' : '');
 
-    let combinedDef = def1;
-    if (def1 && def2 && def1 !== def2) {
-      combinedDef = `${def1} / ${def2}`;
-    } else if (!def1 && def2) {
-      combinedDef = def2;
-    }
+    // Only display the definition of the first word (fallback to def2 only if def1 is empty)
+    const primaryDef = def1 || def2;
 
     pairs.push({
       id: `bb-${index + 1}`,
       word1,
       word2,
       allEquivalents: [word2],
-      definition: combinedDef || '暂无释义',
+      definition: primaryDef || '暂无释义',
     });
   }
 

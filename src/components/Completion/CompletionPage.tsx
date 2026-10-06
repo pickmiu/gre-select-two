@@ -61,9 +61,10 @@ export const CompletionPage: React.FC = () => {
     isWrong: wrongIndicesSet.has(idx),
     word1: q.vocabPair?.word1 || q.answers[0] || '',
     word2: q.vocabPair?.word2 || q.answers[1] || '',
-    definition:
+    definition: (
       q.vocabPair?.definition ||
-      (q.stem && /[\u4e00-\u9fa5]/.test(q.stem) ? q.stem : '暂无释义'),
+      (q.stem && /[\u4e00-\u9fa5]/.test(q.stem) ? q.stem : '暂无释义')
+    ).split(' / ')[0].trim(),
   })).filter((item) => (viewMode === 'wrong' ? item.isWrong : true));
 
   return (

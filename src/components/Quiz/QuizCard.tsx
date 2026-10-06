@@ -29,7 +29,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   const showChineseStem = useGroupProgressStore((s) => s.showChineseStem);
 
   // If showChineseStem is enabled, display Chinese definition directly
-  const rawStem = showChineseStem
+  let rawStem = showChineseStem
     ? (question.vocabPair?.definition || question.stem)
     : question.stem;
 
@@ -50,6 +50,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   };
 
   const isChineseStem = /[\u4e00-\u9fa5]/.test(rawStem);
+
+  // If Chinese stem contains combined definitions (' / '), only display the first word's definition
+  if (isChineseStem && rawStem.includes(' / ')) {
+    rawStem = rawStem.split(' / ')[0].trim();
+  }
 
   return (
     <motion.div
