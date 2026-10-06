@@ -30,22 +30,9 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, progress, onSelect 
     >
       {/* Top: Group Title & Status Badge */}
       <div className="flex items-center justify-between gap-2 mb-1.5">
-        <div className="flex items-center space-x-2">
-          <span
-            className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs ${
-              isCompleted
-                ? 'bg-emerald-100 text-emerald-800'
-                : isInProgress
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-slate-100 text-slate-700'
-            }`}
-          >
-            {group.groupId}
-          </span>
-          <h3 className="font-bold text-slate-800 text-base group-hover:text-blue-600 transition-colors">
-            {group.title}
-          </h3>
-        </div>
+        <h3 className="font-bold text-slate-800 text-base group-hover:text-blue-600 transition-colors">
+          {group.title}
+        </h3>
 
         {/* Status Badge */}
         {isCompleted && (
