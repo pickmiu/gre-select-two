@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { ArrowLeft, Clock } from 'lucide-react';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
 import { QuizCard } from './QuizCard';
 import { soundService } from '../../utils/audio';
@@ -10,15 +10,56 @@ export const QuizPage: React.FC = () => {
     currentIndex,
     activeGroupTitle,
     userAnswers,
+    elapsedTime,
+    updateElapsedTime,
     answerQuestion,
     previousQuestion,
     exitSession,
   } = useGroupProgressStore();
 
   const [currentSelections, setCurrentSelections] = useState<string[]>([]);
+  const [currentSeconds, setCurrentSeconds] = useState<number>(elapsedTime);
+  const startTimeRef = useRef<number>(Date.now());
+  const baseSecondsRef = useRef<number>(elapsedTime);
 
   const currentQuestion = activeQueue[currentIndex];
   const totalQuestions = activeQueue.length;
+
+  // Initialize and run stopwatch
+  useEffect(() => {
+    baseSecondsRef.current = elapsedTime;
+    startTimeRef.current = Date.now();
+    setCurrentSeconds(elapsedTime);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = Date.now();
+      const total = baseSecondsRef.current + Math.floor((now - startTimeRef.current) / 1000);
+      setCurrentSeconds(total);
+      updateElapsedTime(total);
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+      const now = Date.now();
+      const total = baseSecondsRef.current + Math.floor((now - startTimeRef.current) / 1000);
+      updateElapsedTime(total);
+    };
+  }, [updateElapsedTime]);
+
+  const handleExitSession = () => {
+    const now = Date.now();
+    const total = baseSecondsRef.current + Math.floor((now - startTimeRef.current) / 1000);
+    updateElapsedTime(total);
+    exitSession();
+  };
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
 
   // Restore saved selections when question index changes
   useEffect(() => {
@@ -96,7 +137,7 @@ export const QuizPage: React.FC = () => {
       <div className="shrink-0 w-full pt-1 pb-3 border-b border-slate-200/60 bg-slate-50/95 backdrop-blur-sm space-y-2">
         <div className="flex items-center justify-between">
           <button
-            onClick={exitSession}
+            onClick={handleExitSession}
             className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -107,9 +148,15 @@ export const QuizPage: React.FC = () => {
             {activeGroupTitle || '练习模式'}
           </span>
 
-          <span className="text-xs font-mono font-semibold text-slate-400">
-            {currentIndex + 1} / {totalQuestions}
-          </span>
+          <div className="flex items-center space-x-2">
+            <div className="inline-flex items-center space-x-1 text-xs font-mono font-medium text-slate-500 bg-slate-100/90 px-2 py-0.5 rounded-md">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span>{formatTime(currentSeconds)}</span>
+            </div>
+            <span className="text-xs font-mono font-semibold text-slate-400">
+              {currentIndex + 1} / {totalQuestions}
+            </span>
+          </div>
         </div>
 
         {/* Linear Progress Bar */}

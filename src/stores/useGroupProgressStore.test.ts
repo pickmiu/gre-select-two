@@ -107,4 +107,22 @@ describe('useGroupProgressStore', () => {
     expect(useGroupProgressStore.getState().wrongIndices).toEqual([0]);
     expect(useGroupProgressStore.getState().userAnswers[0]).toEqual(['wrong1', 'wrong2']);
   });
+
+  it('tracks elapsedTime and pauses upon exit and resumes upon restart', () => {
+    const store = useGroupProgressStore.getState();
+    store.startGroup(mockGroup, [], mockPairs);
+    expect(useGroupProgressStore.getState().elapsedTime).toBe(0);
+
+    // Update time to 45 seconds
+    useGroupProgressStore.getState().updateElapsedTime(45);
+    expect(useGroupProgressStore.getState().elapsedTime).toBe(45);
+
+    // Exit session
+    useGroupProgressStore.getState().exitSession();
+    expect(useGroupProgressStore.getState().progress.bbgre[1].elapsedTime).toBe(45);
+
+    // Resume session
+    useGroupProgressStore.getState().startGroup(mockGroup, [], mockPairs);
+    expect(useGroupProgressStore.getState().elapsedTime).toBe(45);
+  });
 });

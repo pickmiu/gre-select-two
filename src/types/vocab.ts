@@ -26,5 +26,6 @@ export interface GroupProgress {
   userAnswers?: Record<number, string[]>;
   lastAccuracy?: number;
   lastErrorRate?: number;
+  elapsedTime?: number;
   updatedAt: number;
 }

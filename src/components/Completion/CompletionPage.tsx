@@ -1,16 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { Award, CheckCircle2, XCircle, ArrowLeft, BookOpen, AlertCircle, Sparkles } from 'lucide-react';
+import { Award, CheckCircle2, ArrowLeft, BookOpen, AlertTriangle, Sparkles, Clock } from 'lucide-react';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
 
 export const CompletionPage: React.FC = () => {
-  const { activeGroupTitle, activeQueue, wrongIndices, exitSession } = useGroupProgressStore();
+  const { activeGroupTitle, activeQueue, wrongIndices, elapsedTime, exitSession } = useGroupProgressStore();
 
   const totalQuestions = activeQueue.length;
   const wrongCount = wrongIndices.length;
   const correctCount = totalQuestions - wrongCount;
   const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 1000) / 10 : 100;
-  const errorRate = totalQuestions > 0 ? Math.round((wrongCount / totalQuestions) * 1000) / 10 : 0;
+
+  // Time metrics (GRE target: 60s per question, 30 questions = 1800s = 30 mins)
+  const totalSeconds = elapsedTime || 0;
+  const targetSeconds = totalQuestions * 60;
+  const isOvertime = totalSeconds > targetSeconds;
+  const avgSecondsPerQuestion = totalQuestions > 0 ? Math.round(totalSeconds / totalQuestions) : 0;
+
+  const formatMinutesSeconds = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    if (m === 0) return `${s} 秒`;
+    return s > 0 ? `${m} 分 ${s} 秒` : `${m} 分钟`;
+  };
 
   // If all correct, default to 'all' view; else default to 'wrong'
   const [viewMode, setViewMode] = useState<'wrong' | 'all'>(wrongCount > 0 ? 'wrong' : 'all');
@@ -75,25 +87,58 @@ export const CompletionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Metrics Card */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200/80 grid grid-cols-2 gap-3 sm:gap-4">
-        {/* Accuracy */}
-        <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-left">
-          <div className="text-xs text-emerald-800 font-semibold uppercase tracking-wider">正确率</div>
-          <div className="text-3xl sm:text-4xl font-extrabold text-emerald-700 font-mono mt-1">
-            {accuracy}%
+      {/* Metrics Section: 3-column Grid + Overtime/Pace Banner */}
+      <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200/80 space-y-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Accuracy */}
+          <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-left">
+            <div className="text-xs text-emerald-800 font-semibold uppercase tracking-wider">正确率</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-700 font-mono mt-1">
+              {accuracy}%
+            </div>
+            <div className="text-[11px] text-emerald-600 mt-0.5">答对 {correctCount} / {totalQuestions} 题</div>
           </div>
-          <div className="text-xs text-emerald-600 mt-0.5">答对 {correctCount} / {totalQuestions} 题</div>
+
+          {/* Time Elapsed */}
+          <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80 text-left">
+            <div className="text-xs text-blue-800 font-semibold uppercase tracking-wider">练习总用时</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-blue-700 font-mono mt-1">
+              {formatMinutesSeconds(totalSeconds)}
+            </div>
+            <div className="text-[11px] text-blue-600 mt-0.5">平均 {avgSecondsPerQuestion} 秒/题</div>
+          </div>
+
+          {/* Wrong Count */}
+          <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200/80 text-left">
+            <div className="text-xs text-rose-800 font-semibold uppercase tracking-wider">做错题目</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-rose-700 font-mono mt-1">
+              {wrongCount}
+            </div>
+            <div className="text-[11px] text-rose-600 mt-0.5">{wrongCount > 0 ? '需巩固复习' : '全对通关'}</div>
+          </div>
         </div>
 
-        {/* Wrong Count */}
-        <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200/80 text-left">
-          <div className="text-xs text-rose-800 font-semibold uppercase tracking-wider">做错题目</div>
-          <div className="text-3xl sm:text-4xl font-extrabold text-rose-700 font-mono mt-1">
-            {wrongCount}
+        {/* Overtime Alert or On-Time Encouragement */}
+        {isOvertime ? (
+          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/90 flex items-start space-x-2.5 text-amber-900 text-xs sm:text-sm">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <div className="font-bold text-amber-800">
+                ⏱ 已超出 GRE 考试建议用时（建议 ≤ {Math.floor(targetSeconds / 60)} 分钟）
+              </div>
+              <p className="text-xs text-amber-700/90 leading-relaxed">
+                本次平均每题用时 <strong className="font-mono font-bold text-amber-900">{avgSecondsPerQuestion} 秒</strong>（GRE 填空 6 选 2 建议平均用时在 45~60 秒内）。建议后续练习时加快词对识别速度，为阅读长文章争取更多时间。
+              </p>
+            </div>
           </div>
-          <div className="text-xs text-rose-600 mt-0.5">{wrongCount > 0 ? '需巩固复习' : '全对通关'}</div>
-        </div>
+        ) : (
+          <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-200/70 flex items-center space-x-2 text-emerald-800 text-xs font-medium">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>
+              答题节奏优秀！总用时在考试建议范围以内（平均每题 <strong className="font-mono font-bold text-emerald-900">{avgSecondsPerQuestion} 秒</strong> ≤ 60 秒）。
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Word Pairs Review Section */}
