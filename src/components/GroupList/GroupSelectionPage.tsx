@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
-import { BookOpen, Layers } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { BookOpen, Layers, Settings } from 'lucide-react';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
 import { parseZhangweiCSV, parseBbgreCSV, chunkVocabPairs } from '../../utils/vocabAdapters';
 import { parseQuestionsCSV } from '../../utils/csvParser';
 import { GroupCard } from './GroupCard';
+import { SettingsModal } from '../Common/SettingsModal';
 import { VocabGroup } from '../../types';
 
 import zhangweiCSV from '../../data/words.csv?raw';
@@ -12,6 +13,7 @@ import questionsCSV from '../../data/questions.csv?raw';
 
 export const GroupSelectionPage: React.FC = () => {
   const { currentDataset, progress, setDataset, startGroup } = useGroupProgressStore();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const allQuestions = useMemo(() => parseQuestionsCSV(questionsCSV), []);
   const zhangweiPairs = useMemo(() => parseZhangweiCSV(zhangweiCSV), []);
@@ -30,30 +32,41 @@ export const GroupSelectionPage: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 sm:py-8 space-y-6 animate-fade-in">
-      {/* Dataset Tabs Switcher */}
-      <div className="bg-slate-200/80 p-1.5 rounded-2xl flex items-center max-w-xl mx-auto shadow-inner border border-slate-300/50">
-        <button
-          onClick={() => setDataset('bbgre')}
-          className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 ${
-            currentDataset === 'bbgre'
-              ? 'bg-white text-blue-700 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <Layers className="w-4 h-4 shrink-0" />
-          <span>BBGRE 词对 (36 组 · 1079 对)</span>
-        </button>
+      {/* Top Controls: Dataset Tabs Switcher & Settings Button */}
+      <div className="flex items-center justify-center gap-2.5 sm:gap-3 max-w-xl mx-auto">
+        <div className="bg-slate-200/80 p-1.5 rounded-2xl flex items-center flex-1 shadow-inner border border-slate-300/50">
+          <button
+            onClick={() => setDataset('bbgre')}
+            className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 ${
+              currentDataset === 'bbgre'
+                ? 'bg-white text-blue-700 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Layers className="w-4 h-4 shrink-0" />
+            <span>BBGRE 词对 (36 组 · 1079 对)</span>
+          </button>
 
+          <button
+            onClick={() => setDataset('zhangwei')}
+            className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 ${
+              currentDataset === 'zhangwei'
+                ? 'bg-white text-blue-700 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <BookOpen className="w-4 h-4 shrink-0" />
+            <span>张巍等价词 (31 组 · 903 词)</span>
+          </button>
+        </div>
+
+        {/* Settings button */}
         <button
-          onClick={() => setDataset('zhangwei')}
-          className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 ${
-            currentDataset === 'zhangwei'
-              ? 'bg-white text-blue-700 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
+          onClick={() => setIsSettingsOpen(true)}
+          className="p-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90 shadow-sm transition-all active:scale-95 shrink-0"
+          title="设置与说明"
         >
-          <BookOpen className="w-4 h-4 shrink-0" />
-          <span>张巍等价词 (31 组 · 903 词)</span>
+          <Settings className="w-5 h-5" />
         </button>
       </div>
 
@@ -71,6 +84,12 @@ export const GroupSelectionPage: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 };

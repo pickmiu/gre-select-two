@@ -1,5 +1,4 @@
 import React from 'react';
-import { Header } from './components/Common/Header';
 import { GroupSelectionPage } from './components/GroupList/GroupSelectionPage';
 import { QuizPage } from './components/Quiz/QuizPage';
 import { CompletionPage } from './components/Completion/CompletionPage';
@@ -10,7 +9,6 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
-      {appStage === 'selection' && <Header />}
       <main className="flex-1">
         {appStage === 'selection' && <GroupSelectionPage />}
         {appStage === 'quiz' && <QuizPage />}
