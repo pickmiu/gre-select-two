@@ -15,7 +15,7 @@ export const AnswerOption: React.FC<AnswerOptionProps> = ({
   onSelect,
 }) => {
   let containerStyle =
-    'bg-white text-slate-800 border-slate-200 hover:border-blue-300 hover:bg-slate-50/70 active:scale-[0.99]';
+    'bg-white text-slate-800 border-slate-200 active:scale-[0.99]';
   let icon = null;
 
   if (isSelected) {
