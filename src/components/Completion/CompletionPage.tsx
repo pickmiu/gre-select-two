@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import confetti from 'canvas-confetti';
+import React, { useState } from 'react';
 import {
   Award,
   CheckCircle2,
@@ -63,32 +62,6 @@ export const CompletionPage: React.FC = () => {
 
   // Selected question for snapshot modal
   const [snapshotItem, setSnapshotItem] = useState<DisplayReviewItem | null>(null);
-
-  useEffect(() => {
-    // Launch celebratory confetti
-    const duration = 2 * 1000;
-    const end = Date.now() + duration;
-
-    const frame = () => {
-      confetti({
-        particleCount: 3,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-      });
-      confetti({
-        particleCount: 3,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    };
-    frame();
-  }, []);
 
   const wrongIndicesSet = new Set(wrongIndices);
 
