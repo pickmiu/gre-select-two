@@ -82,15 +82,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                 <div>
                   <strong className="text-slate-800">双词库支持：</strong>
-                  默认提供 <strong>BBGRE 核心词对</strong>（36 组 · 1079 对）与 <strong>张巍等价词</strong>（31 组 · 903 词），每 30 词/对固定分组。
+                  默认提供 <strong>BBGRE 等价词</strong>与 <strong>张巍等价词</strong>，每 30 词/对固定分组。
                 </div>
               </div>
 
               <div className="flex items-start space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-slate-800">沉浸顺畅刷题：</strong>
-                  答错或点击不认识时，红框抖动后 <strong>600ms 直跳下一题</strong>，不阻塞节奏，无需死循环反复重做。
+                  <strong className="text-slate-800">高效沉浸刷题：</strong>
+                  选中 2 个等价词后毫秒级直跳下一题，做题时不显露对错干扰，保持高频刷题节奏，并支持随时返回上一题。
                 </div>
               </div>
 

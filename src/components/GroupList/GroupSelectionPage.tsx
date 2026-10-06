@@ -44,7 +44,7 @@ export const GroupSelectionPage: React.FC = () => {
             }`}
           >
             <BookOpen className="w-4 h-4 shrink-0" />
-            <span>BBGRE 词对 (36 组 · 1079 对)</span>
+            <span>BBGRE 等价词</span>
           </button>
 
           <button
@@ -56,7 +56,7 @@ export const GroupSelectionPage: React.FC = () => {
             }`}
           >
             <BookOpen className="w-4 h-4 shrink-0" />
-            <span>张巍等价词 (31 组 · 903 词)</span>
+            <span>张巍等价词</span>
           </button>
         </div>
 
