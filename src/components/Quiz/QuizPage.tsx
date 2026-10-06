@@ -144,9 +144,15 @@ export const QuizPage: React.FC = () => {
             <span>返回主页</span>
           </button>
 
-          <span className="font-extrabold text-slate-800 text-sm sm:text-base">
-            {activeGroupTitle || '练习模式'}
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="font-extrabold text-slate-800 text-sm sm:text-base">
+              {activeGroupTitle || '练习模式'}
+            </span>
+            <div className="inline-flex items-center space-x-1 text-xs font-mono font-medium text-slate-500 bg-slate-100/90 px-2 py-0.5 rounded-md">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span>{formatTime(currentSeconds)}</span>
+            </div>
+          </div>
 
           <span className="text-xs font-mono font-semibold text-slate-400">
             {currentIndex + 1} / {totalQuestions}
@@ -159,14 +165,6 @@ export const QuizPage: React.FC = () => {
             className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${progressPercent}%` }}
           />
-        </div>
-
-        {/* Timer Display below Progress Bar */}
-        <div className="flex justify-end pt-0.5">
-          <div className="inline-flex items-center space-x-1 text-xs font-mono font-medium text-slate-500 bg-slate-100/90 px-2 py-0.5 rounded-md">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            <span>{formatTime(currentSeconds)}</span>
-          </div>
         </div>
       </div>
 
