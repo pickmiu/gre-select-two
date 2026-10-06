@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
 import { QuizCard } from './QuizCard';
@@ -16,8 +16,6 @@ export const QuizPage: React.FC = () => {
   } = useGroupProgressStore();
 
   const [currentSelections, setCurrentSelections] = useState<string[]>([]);
-  const [isAdvancing, setIsAdvancing] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentQuestion = activeQueue[currentIndex];
   const totalQuestions = activeQueue.length;
@@ -26,19 +24,9 @@ export const QuizPage: React.FC = () => {
   useEffect(() => {
     const saved = userAnswers[currentIndex] || [];
     setCurrentSelections(saved);
-    setIsAdvancing(false);
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
   }, [currentIndex, userAnswers]);
 
   const handleOptionSelect = (option: string) => {
-    if (isAdvancing) return;
-
     let nextSelections: string[];
     if (currentSelections.includes(option)) {
       nextSelections = currentSelections.filter((s) => s !== option);
@@ -48,53 +36,39 @@ export const QuizPage: React.FC = () => {
     }
 
     soundService.playSelect();
-    setCurrentSelections(nextSelections);
 
-    // Auto-advance with snappy ~190ms delay on 2nd selection
+    // Advance immediately on 2nd selection without flashing intermediate state
     if (nextSelections.length === 2) {
-      setIsAdvancing(true);
-      timerRef.current = setTimeout(() => {
-        answerQuestion(nextSelections);
-      }, 190);
+      answerQuestion(nextSelections);
+      return;
     }
+
+    setCurrentSelections(nextSelections);
   };
 
   const handlePreviousQuestion = useCallback(() => {
-    if (isAdvancing || currentIndex === 0) return;
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+    if (currentIndex === 0) return;
     previousQuestion();
-  }, [currentIndex, isAdvancing, previousQuestion]);
+  }, [currentIndex, previousQuestion]);
 
   const handleNextQuestion = useCallback(() => {
-    if (isAdvancing || currentSelections.length < 2) return;
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+    if (currentSelections.length < 2) return;
     answerQuestion(currentSelections);
-  }, [isAdvancing, currentSelections, answerQuestion]);
+  }, [currentSelections, answerQuestion]);
 
   const handleMarkUnknown = useCallback(() => {
-    if (isAdvancing) return;
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
     soundService.playSelect();
     answerQuestion(false);
-  }, [isAdvancing, answerQuestion]);
+  }, [answerQuestion]);
 
   // Keyboard navigation shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-      if (e.key === 'ArrowLeft' && currentIndex > 0 && !isAdvancing) {
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
         handlePreviousQuestion();
-      } else if (e.key === 'ArrowRight' && currentSelections.length === 2 && !isAdvancing) {
+      } else if (e.key === 'ArrowRight' && currentSelections.length === 2) {
         handleNextQuestion();
       } else if (['1', '2', '3', '4', '5', '6'].includes(e.key)) {
         const optionIndex = parseInt(e.key, 10) - 1;
@@ -106,7 +80,7 @@ export const QuizPage: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, currentSelections, isAdvancing, currentQuestion, handlePreviousQuestion, handleNextQuestion]);
+  }, [currentIndex, currentSelections, currentQuestion, handlePreviousQuestion, handleNextQuestion]);
 
   if (!currentQuestion) {
     return null;
@@ -152,7 +126,6 @@ export const QuizPage: React.FC = () => {
         <QuizCard
           question={currentQuestion}
           currentSelections={currentSelections}
-          isAdvancing={isAdvancing}
           canPrevious={canPrevious}
           canNext={canNext}
           onOptionSelect={handleOptionSelect}

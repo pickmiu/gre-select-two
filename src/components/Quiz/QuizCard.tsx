@@ -7,7 +7,6 @@ import { AnswerOption } from './AnswerOption';
 interface QuizCardProps {
   question: QuizQuestion;
   currentSelections: string[];
-  isAdvancing: boolean;
   canPrevious: boolean;
   canNext: boolean;
   onOptionSelect: (option: string) => void;
@@ -19,7 +18,6 @@ interface QuizCardProps {
 export const QuizCard: React.FC<QuizCardProps> = ({
   question,
   currentSelections,
-  isAdvancing,
   canPrevious,
   canNext,
   onOptionSelect,
@@ -89,7 +87,6 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               key={option}
               optionText={option}
               isSelected={isSelected}
-              disabled={isAdvancing}
               onSelect={onOptionSelect}
             />
           );
@@ -101,9 +98,9 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         <button
           type="button"
           onClick={onPrevious}
-          disabled={!canPrevious || isAdvancing}
+          disabled={!canPrevious}
           className={`flex-1 py-2.5 sm:py-3 px-4 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-1 border ${
-            !canPrevious || isAdvancing
+            !canPrevious
               ? 'bg-slate-100/40 text-slate-300 border-slate-200/40 cursor-not-allowed'
               : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200/90 shadow-sm active:scale-[0.99]'
           }`}
@@ -115,12 +112,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         <button
           type="button"
           onClick={onMarkUnknown}
-          disabled={isAdvancing}
-          className={`flex-1 py-2.5 sm:py-3 px-4 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-1 border ${
-            isAdvancing
-              ? 'bg-slate-100/40 text-slate-300 border-slate-200/40 cursor-not-allowed'
-              : 'bg-slate-100/90 hover:bg-slate-200 text-slate-700 border-slate-200/70 shadow-xs active:scale-[0.99]'
-          }`}
+          className="flex-1 py-2.5 sm:py-3 px-4 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-1 border bg-slate-100/90 hover:bg-slate-200 text-slate-700 border-slate-200/70 shadow-xs active:scale-[0.99]"
         >
           <HelpCircle className="w-4 h-4 text-amber-500 shrink-0" />
           <span>不认识</span>
@@ -130,7 +122,6 @@ export const QuizCard: React.FC<QuizCardProps> = ({
           <button
             type="button"
             onClick={onNext}
-            disabled={isAdvancing}
             className="flex-1 py-2.5 sm:py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl transition-all flex items-center justify-center space-x-1 shadow-sm active:scale-[0.99]"
           >
             <span>下一题</span>
