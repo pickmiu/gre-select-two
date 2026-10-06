@@ -162,7 +162,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
 
         if (typeof selectedOptions === 'boolean') {
           isCorrect = selectedOptions;
-          optionsRecord = isCorrect ? currentQ.answers : [];
+          optionsRecord = isCorrect ? currentQ.answers : ['__UNKNOWN__'];
         } else {
           optionsRecord = selectedOptions;
           isCorrect =

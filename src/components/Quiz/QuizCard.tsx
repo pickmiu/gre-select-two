@@ -121,10 +121,10 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: isShaking ? 0.45 : 0.2 }}
               onClick={handleStemClick}
-              className="text-center py-1 cursor-pointer select-none group w-full"
+              className="text-center py-1 cursor-pointer select-none w-full"
             >
               <div className="inline-flex items-center justify-center gap-1.5 relative max-w-full">
-                <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight group-hover:text-blue-900 transition-colors">
+                <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                   {rawStem}
                 </p>
 

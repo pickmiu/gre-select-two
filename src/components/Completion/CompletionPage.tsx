@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   BookOpen,
   AlertTriangle,
+  HelpCircle,
   X,
 } from 'lucide-react';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
@@ -16,6 +17,7 @@ interface DisplayReviewItem {
   index: number;
   question: QuizQuestion;
   isWrong: boolean;
+  isUnknown: boolean;
   word1: string;
   word2: string;
   def1: string;
@@ -77,12 +79,17 @@ export const CompletionPage: React.FC = () => {
       const pair = q.vocabPair;
       const defs = getPairDefinitions(pair, q);
       const userAns = userAnswers[idx] || [];
+      const isWrong = wrongIndicesSet.has(idx);
+      const isUnknown =
+        userAns.includes('__UNKNOWN__') ||
+        (isWrong && userAns.length === 0);
 
       return {
         originalIndex: idx + 1,
         index: idx,
         question: q,
-        isWrong: wrongIndicesSet.has(idx),
+        isWrong,
+        isUnknown,
         word1: pair?.word1 || q.answers[0] || '',
         word2: pair?.word2 || q.answers[1] || '',
         def1: defs.def1,
@@ -225,7 +232,9 @@ export const CompletionPage: React.FC = () => {
                 onClick={() => setSnapshotItem(item)}
                 className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all group cursor-pointer ${
                   item.isWrong
-                    ? 'bg-rose-50/40 border-rose-200/80 hover:bg-rose-50/80 hover:border-rose-300'
+                    ? item.isUnknown
+                      ? 'bg-amber-50/40 border-amber-200/80 hover:bg-amber-50/80 hover:border-amber-300'
+                      : 'bg-rose-50/40 border-rose-200/80 hover:bg-rose-50/80 hover:border-rose-300'
                     : 'bg-emerald-50/30 border-emerald-200/70 hover:bg-emerald-50/60'
                 }`}
               >
@@ -233,7 +242,9 @@ export const CompletionPage: React.FC = () => {
                 <div className="flex items-center space-x-2.5 min-w-0 flex-1">
                   <span
                     className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-mono font-bold shrink-0 ${
-                      item.isWrong
+                      item.isUnknown
+                        ? 'bg-amber-100 text-amber-800'
+                        : item.isWrong
                         ? 'bg-rose-100 text-rose-700'
                         : 'bg-emerald-100 text-emerald-700'
                     }`}
@@ -263,9 +274,15 @@ export const CompletionPage: React.FC = () => {
                 {/* Right: Status badge */}
                 <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
                   {item.isWrong ? (
-                    <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200/90 inline-flex items-center group-hover:bg-rose-200 transition-colors">
-                      答错
-                    </span>
+                    item.isUnknown ? (
+                      <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200/90 inline-flex items-center group-hover:bg-amber-200 transition-colors">
+                        不认识
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200/90 inline-flex items-center group-hover:bg-rose-200 transition-colors">
+                        答错
+                      </span>
+                    )
                   ) : (
                     <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200/90 inline-flex items-center">
                       答对
@@ -294,7 +311,9 @@ export const CompletionPage: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <span
                     className={`w-6 h-6 rounded-lg font-mono font-bold text-xs flex items-center justify-center ${
-                      snapshotItem.isWrong
+                      snapshotItem.isUnknown
+                        ? 'bg-amber-100 text-amber-800'
+                        : snapshotItem.isWrong
                         ? 'bg-rose-100 text-rose-700'
                         : 'bg-emerald-100 text-emerald-700'
                     }`}
@@ -302,7 +321,11 @@ export const CompletionPage: React.FC = () => {
                     {snapshotItem.originalIndex}
                   </span>
                   <h3 className="font-bold text-slate-800 text-base">
-                    {snapshotItem.isWrong ? '错题快照' : '题目快照'}
+                    {snapshotItem.isUnknown
+                      ? '错题快照 · 标记不认识'
+                      : snapshotItem.isWrong
+                      ? '错题快照'
+                      : '题目快照'}
                   </h3>
                 </div>
                 <button
@@ -313,18 +336,20 @@ export const CompletionPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Question Stem Snapshot */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+              {/* Question Stem Snapshot (Clean sentence without redundant definition) */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
                 <p className="text-sm sm:text-base font-medium text-slate-800 leading-relaxed">
                   {renderStem(snapshotItem.question.stem)}
                 </p>
-                {snapshotItem.question.vocabPair?.definition && (
-                  <div className="text-xs text-slate-500 pt-2 border-t border-slate-200/60 flex items-center gap-1.5">
-                    <span className="font-medium text-slate-600">释义：</span>
-                    <span>{snapshotItem.question.vocabPair.definition}</span>
-                  </div>
-                )}
               </div>
+
+              {/* Unknown marker banner if user marked unknown */}
+              {snapshotItem.isUnknown && (
+                <div className="px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs font-medium flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>你的选择：本题已标记为「不认识」</span>
+                </div>
+              )}
 
               {/* Complete 6 Options Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
@@ -337,7 +362,21 @@ export const CompletionPage: React.FC = () => {
                   );
                   const isSelectedWrong = isSelected && !isCorrect;
                   const isSelectedCorrect = isSelected && isCorrect;
-                  const def = lookupWordDefinition(opt);
+
+                  // Resilient definition retrieval
+                  let def = lookupWordDefinition(opt);
+                  if (!def && isCorrect) {
+                    const ansIdx = snapshotItem.question.answers.findIndex(
+                      (a) => a.toLowerCase().trim() === opt.toLowerCase().trim()
+                    );
+                    def = ansIdx === 0 ? snapshotItem.def1 : snapshotItem.def2;
+                    if (!def || def === '暂无释义') {
+                      def = snapshotItem.question.vocabPair?.definition || '';
+                    }
+                  }
+                  if (!def) {
+                    def = lookupWordDefinition(opt.replace(/^(a|an|the)\s+/i, '').trim());
+                  }
 
                   return (
                     <div
