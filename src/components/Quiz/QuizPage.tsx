@@ -144,14 +144,9 @@ export const QuizPage: React.FC = () => {
             <span>返回主页</span>
           </button>
 
-          <div className="flex items-center space-x-2">
-            <span className="font-extrabold text-slate-800 text-sm sm:text-base">
-              {activeGroupTitle || '练习模式'}
-            </span>
-            <div className="inline-flex items-center space-x-1 text-xs font-mono font-medium text-slate-500 bg-slate-100/90 px-2 py-0.5 rounded-md">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span>{formatTime(currentSeconds)}</span>
-            </div>
+          <div className="inline-flex items-center space-x-1 text-xs font-mono font-medium text-slate-500 bg-slate-100/90 px-2 py-0.5 rounded-md">
+            <Clock className="w-3.5 h-3.5 text-slate-400" />
+            <span>{formatTime(currentSeconds)}</span>
           </div>
 
           <span className="text-xs font-mono font-semibold text-slate-400">
