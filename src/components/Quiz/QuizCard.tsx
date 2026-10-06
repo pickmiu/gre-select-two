@@ -65,19 +65,13 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       {/* Stem Card */}
       <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80">
         {isChineseStem ? (
-          <div className="text-center space-y-1">
-            <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-              GRE 填空 6 选 2
-            </div>
-            <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight pt-1">
+          <div className="text-center py-1">
+            <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               {question.stem}
             </p>
           </div>
         ) : (
-          <div className="space-y-1.5">
-            <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-              GRE 填空 6 选 2 真题
-            </div>
+          <div>
             <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
               {renderStem(question.stem)}
             </p>

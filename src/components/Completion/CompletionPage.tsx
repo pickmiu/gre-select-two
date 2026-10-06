@@ -79,20 +79,20 @@ export const CompletionPage: React.FC = () => {
       <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200/80 grid grid-cols-2 gap-3 sm:gap-4">
         {/* Accuracy */}
         <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-left">
-          <div className="text-xs text-emerald-800 font-semibold uppercase tracking-wider">本次正确率</div>
+          <div className="text-xs text-emerald-800 font-semibold uppercase tracking-wider">正确率</div>
           <div className="text-3xl sm:text-4xl font-extrabold text-emerald-700 font-mono mt-1">
             {accuracy}%
           </div>
           <div className="text-xs text-emerald-600 mt-0.5">答对 {correctCount} / {totalQuestions} 题</div>
         </div>
 
-        {/* Error Rate */}
+        {/* Wrong Count */}
         <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200/80 text-left">
-          <div className="text-xs text-rose-800 font-semibold uppercase tracking-wider">错误率</div>
+          <div className="text-xs text-rose-800 font-semibold uppercase tracking-wider">做错题目</div>
           <div className="text-3xl sm:text-4xl font-extrabold text-rose-700 font-mono mt-1">
-            {errorRate}%
+            {wrongCount}
           </div>
-          <div className="text-xs text-rose-600 mt-0.5">做错 {wrongCount} 题</div>
+          <div className="text-xs text-rose-600 mt-0.5">{wrongCount > 0 ? '需巩固复习' : '全对通关'}</div>
         </div>
       </div>
 

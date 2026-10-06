@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Clock, Award } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 import { VocabGroup, GroupProgress } from '../../types';
 
 interface GroupCardProps {
@@ -12,7 +12,6 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, progress, onSelect 
   const status = progress?.status || 'unstarted';
   const total = group.pairs.length;
   const currentIndex = progress?.currentIndex || 0;
-  const lastAccuracy = progress?.lastAccuracy;
 
   const isCompleted = status === 'completed';
   const isInProgress = status === 'in_progress';
@@ -30,7 +29,7 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, progress, onSelect 
     >
       <div>
         {/* Top: Group Title & Status Badge */}
-        <div className="flex items-center justify-between gap-2 mb-1.5">
+        <div className="flex items-center justify-between gap-2 mb-3">
           <h3 className="font-bold text-slate-800 text-base group-hover:text-blue-600 transition-colors">
             {group.title}
           </h3>
@@ -57,37 +56,21 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, progress, onSelect 
           )}
         </div>
 
-        {/* Range label */}
-        <p className="text-xs text-slate-400 font-mono mb-2">{group.rangeLabel}</p>
-
-        {/* Middle Status / Progress Slot (fixed height h-[38px] to keep all cards uniform) */}
-        <div className="h-[38px] mb-2 flex flex-col justify-center">
-          {isInProgress ? (
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px] font-medium text-blue-700">
-                <span>已作答 {currentIndex} / {total} 题</span>
-                <span>{Math.round((currentIndex / total) * 100)}%</span>
-              </div>
-              <div className="w-full bg-blue-100 rounded-full h-1.5 overflow-hidden">
-                <div
-                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(100, (currentIndex / total) * 100)}%` }}
-                />
-              </div>
-            </div>
-          ) : isCompleted && lastAccuracy !== undefined ? (
-            <div className="flex items-center space-x-1.5 text-xs text-emerald-900 font-medium bg-emerald-100/70 rounded-xl px-2.5 py-1 border border-emerald-200/80">
-              <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span>最近正确率: <strong className="font-extrabold text-emerald-700 font-mono text-sm">{lastAccuracy}%</strong></span>
-            </div>
-          ) : null}
+        {/* Minimal Progress Bar (single line, no numbers/text) */}
+        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-3">
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${
+              isCompleted ? 'bg-emerald-500 w-full' : isInProgress ? 'bg-blue-600' : 'w-0'
+            }`}
+            style={isInProgress ? { width: `${Math.min(100, (currentIndex / total) * 100)}%` } : undefined}
+          />
         </div>
       </div>
 
-      {/* Bottom Action Row (pure text without triangle icon) */}
+      {/* Bottom Action Row: Range Label on Left, Action on Right */}
       <div className="pt-2.5 border-t border-slate-100/80 flex items-center justify-between text-xs font-medium">
-        <span className="text-slate-400 group-hover:text-slate-600 transition-colors">
-          共 {total} 道题
+        <span className="text-slate-400 font-mono group-hover:text-slate-500 transition-colors">
+          {group.rangeLabel}
         </span>
         <span
           className={`font-bold transition-colors ${

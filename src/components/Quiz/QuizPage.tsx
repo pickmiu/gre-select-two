@@ -133,8 +133,8 @@ export const QuizPage: React.FC = () => {
             {activeGroupTitle || '练习模式'}
           </span>
 
-          <span className="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200/80">
-            第 {currentIndex + 1} / {totalQuestions} 题
+          <span className="text-xs font-mono font-semibold text-slate-400">
+            {currentIndex + 1} / {totalQuestions}
           </span>
         </div>
 
@@ -160,11 +160,6 @@ export const QuizPage: React.FC = () => {
           onNext={handleNextQuestion}
           onMarkUnknown={handleMarkUnknown}
         />
-      </div>
-
-      {/* Bottom Hint */}
-      <div className="shrink-0 w-full py-2 text-center text-xs text-slate-400">
-        <span>选择 2 个等价词自动进入下一题，可随时返回上一题修改</span>
       </div>
     </div>
   );
