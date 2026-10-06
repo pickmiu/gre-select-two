@@ -29,3 +29,5 @@ export interface SessionStats {
   startTime: number;
   endTime?: number;
 }
+
+export * from './vocab';
