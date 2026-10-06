@@ -28,10 +28,14 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 }) => {
   const showChineseStem = useGroupProgressStore((s) => s.showChineseStem);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isRevealedOriginal, setIsRevealedOriginal] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
 
-  // Close tooltip on question change
+  // Reset states on question change
   useEffect(() => {
     setShowTooltip(false);
+    setIsRevealedOriginal(false);
+    setIsShaking(false);
   }, [question.id]);
 
   // Close tooltip on click outside
@@ -78,6 +82,22 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 
   const showQuestionMark = showChineseStem && isSynthetic;
 
+  // Check if real original question text exists
+  const hasOriginalQuestion =
+    !isSynthetic &&
+    Boolean(question.stem) &&
+    !/^[\u4e00-\u9fa5\s；;，,、/／]+$/.test(question.stem);
+
+  const handleStemClick = () => {
+    if (hasOriginalQuestion) {
+      setIsRevealedOriginal((prev) => !prev);
+    } else {
+      // Trigger wobble / shake animation
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 450);
+    }
+  };
+
   return (
     <motion.div
       key={question.id}
@@ -87,63 +107,106 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       className="w-full max-w-2xl mx-auto space-y-3 sm:space-y-4"
     >
       {/* Stem Card */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80">
-        {isChineseStem ? (
-          <div className="text-center py-1">
-            <div className="inline-flex items-center justify-center gap-1.5 relative max-w-full">
-              <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                {rawStem}
-              </p>
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80 min-h-[90px] flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          {isChineseStem && !isRevealedOriginal ? (
+            <motion.div
+              key="chinese-stem"
+              initial={{ opacity: 0, y: 4 }}
+              animate={
+                isShaking
+                  ? { x: [-8, 8, -6, 6, -3, 3, 0], opacity: 1, y: 0 }
+                  : { opacity: 1, y: 0, x: 0 }
+              }
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: isShaking ? 0.45 : 0.2 }}
+              onClick={handleStemClick}
+              className="text-center py-1 cursor-pointer select-none group w-full"
+              title={hasOriginalQuestion ? "点击切换为原题内容" : "未在题库中匹配到原题"}
+            >
+              <div className="inline-flex items-center justify-center gap-1.5 relative max-w-full">
+                <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight group-hover:text-blue-900 transition-colors">
+                  {rawStem}
+                </p>
 
-              {showQuestionMark && (
-                <div className="relative inline-flex items-center">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowTooltip((prev) => !prev);
-                    }}
-                    onMouseEnter={() => setShowTooltip(true)}
-                    onMouseLeave={() => setShowTooltip(false)}
-                    className="p-1 rounded-full text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors focus:outline-none cursor-pointer"
-                    title="题目来源说明"
-                    aria-label="题目来源说明"
+                {showQuestionMark && (
+                  <div
+                    className="relative inline-flex items-center"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowTooltip((prev) => !prev);
+                      }}
+                      onMouseEnter={() => setShowTooltip(true)}
+                      onMouseLeave={() => setShowTooltip(false)}
+                      className="p-1 rounded-full text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors focus:outline-none cursor-pointer"
+                      title="题目来源说明"
+                      aria-label="题目来源说明"
+                    >
+                      <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
 
-                  <AnimatePresence>
-                    {showTooltip && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-30 w-64 sm:w-72 p-3 bg-slate-900/95 backdrop-blur-sm text-slate-100 text-xs rounded-xl shadow-xl border border-slate-700/60 leading-relaxed text-left pointer-events-auto"
-                      >
-                        <p className="font-bold text-amber-300 mb-1 flex items-center gap-1.5">
-                          <span>题库未收录原题</span>
-                        </p>
-                        <p className="text-slate-300">
-                          本词对未在 GRE 真题库中匹配到原题，选项为系统自动生成的词汇干扰项。
-                        </p>
-                        {/* Downward pointer caret */}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900/95" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                    <AnimatePresence>
+                      {showTooltip && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-30 w-64 sm:w-72 p-3 bg-slate-900/95 backdrop-blur-sm text-slate-100 text-xs rounded-xl shadow-xl border border-slate-700/60 leading-relaxed text-left pointer-events-auto"
+                        >
+                          <p className="font-bold text-amber-300 mb-1 flex items-center gap-1.5">
+                            <span>题库未收录原题</span>
+                          </p>
+                          <p className="text-slate-300">
+                            本词对未在 GRE 真题库中匹配到原题，选项为系统自动生成的词汇干扰项。
+                          </p>
+                          {/* Downward pointer caret */}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900/95" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </div>
+
+              {hasOriginalQuestion && (
+                <div className="mt-1 text-center">
+                  <span className="text-[11px] text-slate-400 group-hover:text-blue-500 transition-colors">
+                    点击查看原题内容
+                  </span>
                 </div>
               )}
-            </div>
-          </div>
-        ) : (
-          <div>
-            <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
-              {renderStem(rawStem)}
-            </p>
-          </div>
-        )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="original-stem"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2 }}
+              onClick={showChineseStem && hasOriginalQuestion ? handleStemClick : undefined}
+              className={`w-full ${showChineseStem && hasOriginalQuestion ? "cursor-pointer group" : ""}`}
+              title={showChineseStem && hasOriginalQuestion ? "点击切回中文释义" : undefined}
+            >
+              <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
+                {renderStem(question.stem)}
+              </p>
+              {showChineseStem && hasOriginalQuestion && (
+                <div className="mt-2 text-center">
+                  <span className="text-[11px] font-medium text-blue-600 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/60 px-2 py-0.5 rounded-full inline-flex items-center gap-1 transition-colors">
+                    <span>原题内容</span>
+                    <span className="text-blue-400">· 点击切回中文</span>
+                  </span>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Options Grid - 1 column on mobile, 2 columns on tablet/desktop */}
