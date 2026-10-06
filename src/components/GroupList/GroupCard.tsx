@@ -58,31 +58,30 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, progress, onSelect 
         </div>
 
         {/* Range label */}
-        <p className="text-xs text-slate-400 font-mono mb-3">{group.rangeLabel}</p>
+        <p className="text-xs text-slate-400 font-mono mb-2">{group.rangeLabel}</p>
 
-        {/* In-progress mini bar */}
-        {isInProgress && (
-          <div className="space-y-1 mb-2">
-            <div className="flex justify-between text-[11px] font-medium text-blue-700">
-              <span>已作答 {currentIndex} / {total} 题</span>
-              <span>{Math.round((currentIndex / total) * 100)}%</span>
+        {/* Middle Status / Progress Slot (fixed height h-[38px] to keep all cards uniform) */}
+        <div className="h-[38px] mb-2 flex flex-col justify-center">
+          {isInProgress ? (
+            <div className="space-y-1">
+              <div className="flex justify-between text-[11px] font-medium text-blue-700">
+                <span>已作答 {currentIndex} / {total} 题</span>
+                <span>{Math.round((currentIndex / total) * 100)}%</span>
+              </div>
+              <div className="w-full bg-blue-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(100, (currentIndex / total) * 100)}%` }}
+                />
+              </div>
             </div>
-            <div className="w-full bg-blue-100 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min(100, (currentIndex / total) * 100)}%` }}
-              />
+          ) : isCompleted && lastAccuracy !== undefined ? (
+            <div className="flex items-center space-x-1.5 text-xs text-emerald-900 font-medium bg-emerald-100/70 rounded-xl px-2.5 py-1 border border-emerald-200/80">
+              <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>最近正确率: <strong className="font-extrabold text-emerald-700 font-mono text-sm">{lastAccuracy}%</strong></span>
             </div>
-          </div>
-        )}
-
-        {/* Completed accuracy badge */}
-        {isCompleted && lastAccuracy !== undefined && (
-          <div className="flex items-center space-x-1.5 text-xs text-emerald-900 font-medium bg-emerald-100/70 rounded-xl px-2.5 py-1.5 border border-emerald-200/80 mb-2">
-            <Award className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>最近正确率: <strong className="font-extrabold text-emerald-700 font-mono text-sm">{lastAccuracy}%</strong></span>
-          </div>
-        )}
+          ) : null}
+        </div>
       </div>
 
       {/* Bottom Action Row (pure text without triangle icon) */}

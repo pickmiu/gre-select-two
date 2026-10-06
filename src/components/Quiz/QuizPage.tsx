@@ -1,44 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, CheckCircle2, Clock } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
 import { QuizCard } from './QuizCard';
-import { vibrateSuccess, vibrateError } from '../../utils/vibration';
 import { soundService } from '../../utils/audio';
-import { AnswerStatus } from '../../types';
 
 export const QuizPage: React.FC = () => {
   const {
     activeQueue,
     currentIndex,
     activeGroupTitle,
+    userAnswers,
     answerQuestion,
+    previousQuestion,
     exitSession,
   } = useGroupProgressStore();
 
   const [currentSelections, setCurrentSelections] = useState<string[]>([]);
-  const [answerStatus, setAnswerStatus] = useState<AnswerStatus>('idle');
+  const [isAdvancing, setIsAdvancing] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentQuestion = activeQueue[currentIndex];
   const totalQuestions = activeQueue.length;
 
+  // Restore saved selections when question index changes
   useEffect(() => {
-    // Clear timer and reset selections when question changes
-    setCurrentSelections([]);
-    setAnswerStatus('idle');
+    const saved = userAnswers[currentIndex] || [];
+    setCurrentSelections(saved);
+    setIsAdvancing(false);
+
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [currentIndex]);
-
-  if (!currentQuestion) {
-    return null;
-  }
+  }, [currentIndex, userAnswers]);
 
   const handleOptionSelect = (option: string) => {
-    if (answerStatus !== 'idle') return;
+    if (isAdvancing) return;
 
     let nextSelections: string[];
     if (currentSelections.includes(option)) {
@@ -51,49 +50,71 @@ export const QuizPage: React.FC = () => {
     soundService.playSelect();
     setCurrentSelections(nextSelections);
 
-    // Auto evaluate when 2 options selected
+    // Auto-advance with snappy ~190ms delay on 2nd selection
     if (nextSelections.length === 2) {
-      const isCorrect =
-        nextSelections.length === currentQuestion.answers.length &&
-        nextSelections.every((ans) =>
-          currentQuestion.answers.some(
-            (a) => a.toLowerCase().trim() === ans.toLowerCase().trim()
-          )
-        );
-
-      if (isCorrect) {
-        vibrateSuccess();
-        soundService.playCorrect();
-        setAnswerStatus('correct');
-
-        timerRef.current = setTimeout(() => {
-          answerQuestion(true);
-        }, 600);
-      } else {
-        vibrateError();
-        soundService.playWrong();
-        setAnswerStatus('wrong');
-
-        // Non-blocking: skip to next question after 600ms, NO loop retry
-        timerRef.current = setTimeout(() => {
-          answerQuestion(false);
-        }, 600);
-      }
+      setIsAdvancing(true);
+      timerRef.current = setTimeout(() => {
+        answerQuestion(nextSelections);
+      }, 190);
     }
   };
 
-  const handleMarkUnknown = () => {
-    if (answerStatus !== 'idle') return;
-    vibrateError();
-    soundService.playWrong();
-    setAnswerStatus('wrong');
+  const handlePreviousQuestion = useCallback(() => {
+    if (isAdvancing || currentIndex === 0) return;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    previousQuestion();
+  }, [currentIndex, isAdvancing, previousQuestion]);
 
-    timerRef.current = setTimeout(() => {
-      answerQuestion(false);
-    }, 600);
-  };
+  const handleNextQuestion = useCallback(() => {
+    if (isAdvancing || currentSelections.length < 2) return;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    answerQuestion(currentSelections);
+  }, [isAdvancing, currentSelections, answerQuestion]);
+
+  const handleMarkUnknown = useCallback(() => {
+    if (isAdvancing) return;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    soundService.playSelect();
+    answerQuestion(false);
+  }, [isAdvancing, answerQuestion]);
+
+  // Keyboard navigation shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      if (e.key === 'ArrowLeft' && currentIndex > 0 && !isAdvancing) {
+        handlePreviousQuestion();
+      } else if (e.key === 'ArrowRight' && currentSelections.length === 2 && !isAdvancing) {
+        handleNextQuestion();
+      } else if (['1', '2', '3', '4', '5', '6'].includes(e.key)) {
+        const optionIndex = parseInt(e.key, 10) - 1;
+        if (currentQuestion && currentQuestion.options[optionIndex]) {
+          handleOptionSelect(currentQuestion.options[optionIndex]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, currentSelections, isAdvancing, currentQuestion, handlePreviousQuestion, handleNextQuestion]);
+
+  if (!currentQuestion) {
+    return null;
+  }
 
   const progressPercent = totalQuestions > 0 ? ((currentIndex + 1) / totalQuestions) * 100 : 0;
+  const canPrevious = currentIndex > 0;
+  const canNext = currentSelections.length === 2 && currentIndex < totalQuestions - 1;
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] max-w-4xl mx-auto px-4 py-2 sm:py-3 flex flex-col justify-between overflow-hidden select-none">
@@ -131,15 +152,19 @@ export const QuizPage: React.FC = () => {
         <QuizCard
           question={currentQuestion}
           currentSelections={currentSelections}
-          answerStatus={answerStatus}
+          isAdvancing={isAdvancing}
+          canPrevious={canPrevious}
+          canNext={canNext}
           onOptionSelect={handleOptionSelect}
+          onPrevious={handlePreviousQuestion}
+          onNext={handleNextQuestion}
           onMarkUnknown={handleMarkUnknown}
         />
       </div>
 
       {/* Bottom Hint */}
       <div className="shrink-0 w-full py-2 text-center text-xs text-slate-400">
-        <span>在上方选择 2 个等价词，系统将自动判定</span>
+        <span>选择 2 个等价词自动进入下一题，可随时返回上一题修改</span>
       </div>
     </div>
   );

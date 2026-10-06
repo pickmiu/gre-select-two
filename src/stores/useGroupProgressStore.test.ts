@@ -82,4 +82,29 @@ describe('useGroupProgressStore', () => {
     expect(useGroupProgressStore.getState().appStage).toBe('quiz');
     expect(useGroupProgressStore.getState().currentIndex).toBe(1);
   });
+
+  it('supports previousQuestion and restores userAnswers correctly', () => {
+    const store = useGroupProgressStore.getState();
+    store.startGroup(mockGroup, [], mockPairs);
+
+    const q0 = useGroupProgressStore.getState().activeQueue[0];
+    const correctAnswers = q0.answers;
+
+    // Answer Q0 with correct answers
+    useGroupProgressStore.getState().answerQuestion(correctAnswers);
+    expect(useGroupProgressStore.getState().currentIndex).toBe(1);
+    expect(useGroupProgressStore.getState().userAnswers[0]).toEqual(correctAnswers);
+    expect(useGroupProgressStore.getState().wrongIndices).toEqual([]);
+
+    // Go back to previous question
+    useGroupProgressStore.getState().previousQuestion();
+    expect(useGroupProgressStore.getState().currentIndex).toBe(0);
+    expect(useGroupProgressStore.getState().userAnswers[0]).toEqual(correctAnswers);
+
+    // Re-answer Q0 with wrong answers
+    useGroupProgressStore.getState().answerQuestion(['wrong1', 'wrong2']);
+    expect(useGroupProgressStore.getState().currentIndex).toBe(1);
+    expect(useGroupProgressStore.getState().wrongIndices).toEqual([0]);
+    expect(useGroupProgressStore.getState().userAnswers[0]).toEqual(['wrong1', 'wrong2']);
+  });
 });

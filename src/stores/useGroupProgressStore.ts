@@ -21,6 +21,7 @@ interface GroupProgressState {
   activeQueue: QuizQuestion[];
   currentIndex: number;
   wrongIndices: number[];
+  userAnswers: Record<number, string[]>;
   appStage: AppStage;
 
   // Actions
@@ -30,7 +31,8 @@ interface GroupProgressState {
     allQuestions: QuizQuestion[],
     allPoolPairs: VocabPair[]
   ) => void;
-  answerQuestion: (isCorrect: boolean) => void;
+  answerQuestion: (selectedOptions: string[] | boolean) => void;
+  previousQuestion: () => void;
   exitSession: () => void;
   resetAll: () => void;
 }
@@ -53,6 +55,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
       activeQueue: [],
       currentIndex: 0,
       wrongIndices: [],
+      userAnswers: {},
       appStage: 'selection',
 
       setDataset: (dataset) => set({ currentDataset: dataset }),
@@ -75,6 +78,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
             activeQueue: existing.sessionQuestions,
             currentIndex: existing.currentIndex,
             wrongIndices: existing.wrongIndices || [],
+            userAnswers: existing.userAnswers || {},
             appStage: 'quiz',
           });
           return;
@@ -87,6 +91,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
           currentIndex: 0,
           sessionQuestions: queue,
           wrongIndices: [],
+          userAnswers: {},
           lastAccuracy: existing?.lastAccuracy,
           lastErrorRate: existing?.lastErrorRate,
           updatedAt: Date.now(),
@@ -98,6 +103,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
           activeQueue: queue,
           currentIndex: 0,
           wrongIndices: [],
+          userAnswers: {},
           appStage: 'quiz',
           progress: {
             ...state.progress,
@@ -109,14 +115,37 @@ export const useGroupProgressStore = create<GroupProgressState>()(
         });
       },
 
-      answerQuestion: (isCorrect) => {
+      answerQuestion: (selectedOptions) => {
         const state = get();
-        const { activeGroupId, currentDataset, currentIndex, activeQueue, wrongIndices } = state;
+        const { activeGroupId, currentDataset, currentIndex, activeQueue, wrongIndices, userAnswers } = state;
         if (!activeGroupId || activeQueue.length === 0) return;
 
-        const nextWrongIndices = !isCorrect
-          ? Array.from(new Set([...wrongIndices, currentIndex]))
-          : wrongIndices;
+        const currentQ = activeQueue[currentIndex];
+        let isCorrect = false;
+        let optionsRecord: string[] = [];
+
+        if (typeof selectedOptions === 'boolean') {
+          isCorrect = selectedOptions;
+          optionsRecord = isCorrect ? currentQ.answers : [];
+        } else {
+          optionsRecord = selectedOptions;
+          isCorrect =
+            selectedOptions.length === currentQ.answers.length &&
+            selectedOptions.every((ans) =>
+              currentQ.answers.some(
+                (a) => a.toLowerCase().trim() === ans.toLowerCase().trim()
+              )
+            );
+        }
+
+        const nextWrongIndices = isCorrect
+          ? wrongIndices.filter((idx) => idx !== currentIndex)
+          : Array.from(new Set([...wrongIndices, currentIndex]));
+
+        const nextUserAnswers = {
+          ...userAnswers,
+          [currentIndex]: optionsRecord,
+        };
 
         if (currentIndex < activeQueue.length - 1) {
           const nextIndex = currentIndex + 1;
@@ -128,12 +157,14 @@ export const useGroupProgressStore = create<GroupProgressState>()(
             currentIndex: nextIndex,
             sessionQuestions: activeQueue,
             wrongIndices: nextWrongIndices,
+            userAnswers: nextUserAnswers,
             updatedAt: Date.now(),
           };
 
           set({
             currentIndex: nextIndex,
             wrongIndices: nextWrongIndices,
+            userAnswers: nextUserAnswers,
             progress: {
               ...state.progress,
               [currentDataset]: {
@@ -155,6 +186,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
             currentIndex: currentIndex,
             sessionQuestions: activeQueue,
             wrongIndices: nextWrongIndices,
+            userAnswers: nextUserAnswers,
             lastAccuracy: accuracy,
             lastErrorRate: errorRate,
             updatedAt: Date.now(),
@@ -162,6 +194,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
 
           set({
             wrongIndices: nextWrongIndices,
+            userAnswers: nextUserAnswers,
             appStage: 'completion',
             progress: {
               ...state.progress,
@@ -174,9 +207,39 @@ export const useGroupProgressStore = create<GroupProgressState>()(
         }
       },
 
+      previousQuestion: () => {
+        const state = get();
+        const { currentIndex, activeGroupId, currentDataset, activeQueue, wrongIndices, userAnswers } = state;
+        if (currentIndex <= 0 || !activeGroupId) return;
+
+        const prevIndex = currentIndex - 1;
+        const currentProgress = state.progress[currentDataset]?.[activeGroupId];
+
+        const updatedGroupProgress: GroupProgress = {
+          ...(currentProgress || { status: 'in_progress', updatedAt: Date.now() }),
+          status: 'in_progress',
+          currentIndex: prevIndex,
+          sessionQuestions: activeQueue,
+          wrongIndices,
+          userAnswers,
+          updatedAt: Date.now(),
+        };
+
+        set({
+          currentIndex: prevIndex,
+          progress: {
+            ...state.progress,
+            [currentDataset]: {
+              ...state.progress[currentDataset],
+              [activeGroupId]: updatedGroupProgress,
+            },
+          },
+        });
+      },
+
       exitSession: () => {
         const state = get();
-        const { activeGroupId, currentDataset, currentIndex, activeQueue, wrongIndices } = state;
+        const { activeGroupId, currentDataset, currentIndex, activeQueue, wrongIndices, userAnswers } = state;
 
         if (activeGroupId && activeQueue.length > 0) {
           const currentProgress = state.progress[currentDataset]?.[activeGroupId];
@@ -189,6 +252,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
               currentIndex,
               sessionQuestions: activeQueue,
               wrongIndices,
+              userAnswers,
               updatedAt: Date.now(),
             };
 
@@ -218,6 +282,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
           activeQueue: [],
           currentIndex: 0,
           wrongIndices: [],
+          userAnswers: {},
           appStage: 'selection',
         });
       },

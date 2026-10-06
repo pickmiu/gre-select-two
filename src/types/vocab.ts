@@ -23,6 +23,7 @@ export interface GroupProgress {
   currentIndex: number;
   sessionQuestions?: QuizQuestion[];
   wrongIndices: number[];
+  userAnswers?: Record<number, string[]>;
   lastAccuracy?: number;
   lastErrorRate?: number;
   updatedAt: number;

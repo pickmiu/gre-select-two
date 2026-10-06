@@ -1,22 +1,30 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { HelpCircle } from 'lucide-react';
-import { QuizQuestion, AnswerStatus } from '../../types';
+import { HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { QuizQuestion } from '../../types';
 import { AnswerOption } from './AnswerOption';
 
 interface QuizCardProps {
   question: QuizQuestion;
   currentSelections: string[];
-  answerStatus: AnswerStatus;
+  isAdvancing: boolean;
+  canPrevious: boolean;
+  canNext: boolean;
   onOptionSelect: (option: string) => void;
-  onMarkUnknown?: () => void;
+  onPrevious: () => void;
+  onNext: () => void;
+  onMarkUnknown: () => void;
 }
 
 export const QuizCard: React.FC<QuizCardProps> = ({
   question,
   currentSelections,
-  answerStatus,
+  isAdvancing,
+  canPrevious,
+  canNext,
   onOptionSelect,
+  onPrevious,
+  onNext,
   onMarkUnknown,
 }) => {
   // Format stem with styled fill-in-the-blank highlight
@@ -44,19 +52,14 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     );
   };
 
-  const isWrong = answerStatus === 'wrong' || answerStatus === 'unknown';
   const isChineseStem = /[\u4e00-\u9fa5]/.test(question.stem);
 
   return (
     <motion.div
       key={question.id}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        x: isWrong ? [0, -10, 10, -10, 10, 0] : 0,
-      }}
-      transition={{ duration: isWrong ? 0.35 : 0.2 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.18 }}
       className="w-full max-w-2xl mx-auto space-y-3 sm:space-y-4"
     >
       {/* Stem Card */}
@@ -86,33 +89,61 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
         {question.options.map((option) => {
           const isSelected = currentSelections.includes(option);
-          const isCorrectAnswer = question.answers.some(
-            (ans) => ans.toLowerCase().trim() === option.toLowerCase().trim()
-          );
 
           return (
             <AnswerOption
               key={option}
               optionText={option}
               isSelected={isSelected}
-              isCorrectAnswer={isCorrectAnswer}
-              answerStatus={answerStatus}
+              disabled={isAdvancing}
               onSelect={onOptionSelect}
             />
           );
         })}
       </div>
 
-      {/* "Don't Know" Button */}
-      {answerStatus === 'idle' && onMarkUnknown && (
+      {/* Navigation & Action Bar: [上一题] [不认识] [下一题] */}
+      <div className="flex items-center gap-2 sm:gap-3 pt-1">
         <button
-          onClick={onMarkUnknown}
-          className="w-full py-2.5 sm:py-3 px-6 bg-slate-100/90 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl transition-all flex items-center justify-center space-x-2 shadow-xs active:scale-[0.99] border border-slate-200/60"
+          type="button"
+          onClick={onPrevious}
+          disabled={!canPrevious || isAdvancing}
+          className={`flex-1 py-2.5 sm:py-3 px-4 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-1 border ${
+            !canPrevious || isAdvancing
+              ? 'bg-slate-100/40 text-slate-300 border-slate-200/40 cursor-not-allowed'
+              : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200/90 shadow-sm active:scale-[0.99]'
+          }`}
         >
-          <HelpCircle className="w-4 h-4 text-amber-500" />
+          <ChevronLeft className="w-4 h-4 shrink-0" />
+          <span>上一题</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onMarkUnknown}
+          disabled={isAdvancing}
+          className={`flex-1 py-2.5 sm:py-3 px-4 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-1 border ${
+            isAdvancing
+              ? 'bg-slate-100/40 text-slate-300 border-slate-200/40 cursor-not-allowed'
+              : 'bg-slate-100/90 hover:bg-slate-200 text-slate-700 border-slate-200/70 shadow-xs active:scale-[0.99]'
+          }`}
+        >
+          <HelpCircle className="w-4 h-4 text-amber-500 shrink-0" />
           <span>不认识</span>
         </button>
-      )}
+
+        {canNext && (
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={isAdvancing}
+            className="flex-1 py-2.5 sm:py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl transition-all flex items-center justify-center space-x-1 shadow-sm active:scale-[0.99]"
+          >
+            <span>下一题</span>
+            <ChevronRight className="w-4 h-4 shrink-0" />
+          </button>
+        )}
+      </div>
     </motion.div>
   );
 };
