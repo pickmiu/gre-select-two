@@ -46,7 +46,7 @@ const initialProgress: {
 export const useGroupProgressStore = create<GroupProgressState>()(
   persist(
     (set, get) => ({
-      currentDataset: 'zhangwei',
+      currentDataset: 'bbgre',
       progress: initialProgress,
       activeGroupId: null,
       activeGroupTitle: '',
@@ -211,7 +211,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
 
       resetAll: () => {
         set({
-          currentDataset: 'zhangwei',
+          currentDataset: 'bbgre',
           progress: { zhangwei: {}, bbgre: {} },
           activeGroupId: null,
           activeGroupTitle: '',
@@ -223,7 +223,7 @@ export const useGroupProgressStore = create<GroupProgressState>()(
       },
     }),
     {
-      name: 'gre_group_progress_v1',
+      name: 'gre_group_progress_v2',
       storage: createJSONStorage(() => (typeof window !== 'undefined' ? window.localStorage : {
         getItem: () => null,
         setItem: () => {},

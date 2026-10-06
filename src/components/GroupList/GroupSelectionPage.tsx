@@ -44,18 +44,6 @@ export const GroupSelectionPage: React.FC = () => {
       {/* Dataset Tabs Switcher */}
       <div className="bg-slate-200/80 p-1.5 rounded-2xl flex items-center max-w-xl mx-auto shadow-inner border border-slate-300/50">
         <button
-          onClick={() => setDataset('zhangwei')}
-          className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 ${
-            currentDataset === 'zhangwei'
-              ? 'bg-white text-blue-700 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <BookOpen className="w-4 h-4 shrink-0" />
-          <span>张巍等价词 (31 组 · 903 词)</span>
-        </button>
-
-        <button
           onClick={() => setDataset('bbgre')}
           className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 ${
             currentDataset === 'bbgre'
@@ -65,6 +53,18 @@ export const GroupSelectionPage: React.FC = () => {
         >
           <Layers className="w-4 h-4 shrink-0" />
           <span>BBGRE 词对 (36 组 · 1079 对)</span>
+        </button>
+
+        <button
+          onClick={() => setDataset('zhangwei')}
+          className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 ${
+            currentDataset === 'zhangwei'
+              ? 'bg-white text-blue-700 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <BookOpen className="w-4 h-4 shrink-0" />
+          <span>张巍等价词 (31 组 · 903 词)</span>
         </button>
       </div>
 

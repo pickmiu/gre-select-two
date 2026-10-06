@@ -21,10 +21,10 @@ describe('useGroupProgressStore', () => {
 
   it('switches dataset correctly and maintains isolated progress', () => {
     const store = useGroupProgressStore.getState();
-    expect(store.currentDataset).toBe('zhangwei');
+    expect(store.currentDataset).toBe('bbgre');
 
-    store.setDataset('bbgre');
-    expect(useGroupProgressStore.getState().currentDataset).toBe('bbgre');
+    store.setDataset('zhangwei');
+    expect(useGroupProgressStore.getState().currentDataset).toBe('zhangwei');
   });
 
   it('starts a group and transitions stage to quiz', () => {
@@ -38,7 +38,7 @@ describe('useGroupProgressStore', () => {
     expect(updated.currentIndex).toBe(0);
     expect(updated.wrongIndices).toEqual([]);
 
-    const grpProgress = updated.progress.zhangwei[1];
+    const grpProgress = updated.progress[updated.currentDataset][1];
     expect(grpProgress.status).toBe('in_progress');
   });
 
@@ -57,7 +57,7 @@ describe('useGroupProgressStore', () => {
     expect(completed.appStage).toBe('completion');
     expect(completed.wrongIndices).toEqual([1]);
 
-    const grp = completed.progress.zhangwei[1];
+    const grp = completed.progress[completed.currentDataset][1];
     expect(grp.status).toBe('completed');
     expect(grp.lastAccuracy).toBe(50);
     expect(grp.lastErrorRate).toBe(50);
@@ -74,8 +74,8 @@ describe('useGroupProgressStore', () => {
     // Exit to homepage
     useGroupProgressStore.getState().exitSession();
     expect(useGroupProgressStore.getState().appStage).toBe('selection');
-    expect(useGroupProgressStore.getState().progress.zhangwei[1].status).toBe('in_progress');
-    expect(useGroupProgressStore.getState().progress.zhangwei[1].currentIndex).toBe(1);
+    expect(useGroupProgressStore.getState().progress.bbgre[1].status).toBe('in_progress');
+    expect(useGroupProgressStore.getState().progress.bbgre[1].currentIndex).toBe(1);
 
     // Resume group
     useGroupProgressStore.getState().startGroup(mockGroup, [], mockPairs);
