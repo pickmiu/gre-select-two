@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { BookOpen, Layers, Settings } from 'lucide-react';
+import { BookOpen, Settings } from 'lucide-react';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
 import { parseZhangweiCSV, parseBbgreCSV, chunkVocabPairs } from '../../utils/vocabAdapters';
 import { parseQuestionsCSV } from '../../utils/csvParser';
@@ -43,7 +43,7 @@ export const GroupSelectionPage: React.FC = () => {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Layers className="w-4 h-4 shrink-0" />
+            <BookOpen className="w-4 h-4 shrink-0" />
             <span>BBGRE 词对 (36 组 · 1079 对)</span>
           </button>
 
