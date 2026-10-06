@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { QuizQuestion } from '../../types';
 import { AnswerOption } from './AnswerOption';
@@ -27,6 +27,20 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   onMarkUnknown,
 }) => {
   const showChineseStem = useGroupProgressStore((s) => s.showChineseStem);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Close tooltip on question change
+  useEffect(() => {
+    setShowTooltip(false);
+  }, [question.id]);
+
+  // Close tooltip on click outside
+  useEffect(() => {
+    if (!showTooltip) return;
+    const handleGlobalClick = () => setShowTooltip(false);
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, [showTooltip]);
 
   // If showChineseStem is enabled, display Chinese definition directly
   let rawStem = showChineseStem
@@ -56,6 +70,14 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     rawStem = rawStem.split(' / ')[0].trim();
   }
 
+  // Detect if question options were not found in real question bank (i.e. synthetic / fallback)
+  const isSynthetic =
+    Boolean(question.isSynthetic) ||
+    String(question.id).startsWith('fallback-') ||
+    String(question.id).startsWith('synthetic-');
+
+  const showQuestionMark = showChineseStem && isSynthetic;
+
   return (
     <motion.div
       key={question.id}
@@ -68,9 +90,52 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80">
         {isChineseStem ? (
           <div className="text-center py-1">
-            <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              {rawStem}
-            </p>
+            <div className="inline-flex items-center justify-center gap-1.5 relative max-w-full">
+              <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                {rawStem}
+              </p>
+
+              {showQuestionMark && (
+                <div className="relative inline-flex items-center">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowTooltip((prev) => !prev);
+                    }}
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                    className="p-1 rounded-full text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors focus:outline-none cursor-pointer"
+                    title="题目来源说明"
+                    aria-label="题目来源说明"
+                  >
+                    <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+
+                  <AnimatePresence>
+                    {showTooltip && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 z-30 w-64 sm:w-72 p-3 bg-slate-900/95 backdrop-blur-sm text-slate-100 text-xs rounded-xl shadow-xl border border-slate-700/60 leading-relaxed text-left pointer-events-auto"
+                      >
+                        <p className="font-bold text-amber-300 mb-1 flex items-center gap-1.5">
+                          <span>题库未收录原题</span>
+                        </p>
+                        <p className="text-slate-300">
+                          本词对未在 GRE 真题库中匹配到原题，选项为系统自动生成的词汇干扰项。
+                        </p>
+                        {/* Downward pointer caret */}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900/95" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div>

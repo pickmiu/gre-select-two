@@ -11,6 +11,7 @@ export interface QuizQuestion {
   answers: string[];
   answerBases?: string[];
   vocabPair?: import('./vocab').VocabPair;
+  isSynthetic?: boolean;
 }
 
 export type AppStage = 'selection' | 'quiz' | 'completion';

@@ -34,6 +34,7 @@ describe('generateGroupQuizQueue', () => {
     expect(queue[0].answers).toEqual(['belies', 'masks']);
     expect(queue[0].vocabPair?.id).toBe('bb-1');
     expect(queue[0].vocabPair?.definition).toBe('掩饰; 掩盖');
+    expect(queue[0].isSynthetic).toBe(false);
   });
 
   it('falls back to pure Chinese stem without prefix when real question is missing', () => {
@@ -53,5 +54,6 @@ describe('generateGroupQuizQueue', () => {
     // Ensure all 6 options are unique
     expect(new Set(q.options).size).toBe(6);
     expect(q.vocabPair?.id).toBe('bb-2');
+    expect(q.isSynthetic).toBe(true);
   });
 });

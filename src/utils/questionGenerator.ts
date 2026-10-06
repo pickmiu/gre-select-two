@@ -93,6 +93,7 @@ export function generateSyntheticQuestion(
     stem: '', // Empty stem signifies a synthetic option-only question
     options,
     answers: [ans1, ans2],
+    isSynthetic: true,
   };
 }
 
@@ -468,6 +469,7 @@ export function generateGroupQuizQueue(
         ...picked,
         options: shuffleArray(picked.options),
         vocabPair: pair,
+        isSynthetic: false,
       };
       resultQuestions.push(cloned);
     } else {
@@ -497,6 +499,7 @@ export function generateGroupQuizQueue(
         options,
         answers: [ans1, ans2],
         vocabPair: pair,
+        isSynthetic: true,
       });
     }
   }
