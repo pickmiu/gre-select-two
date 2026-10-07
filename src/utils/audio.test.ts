@@ -5,10 +5,14 @@ describe('SoundService', () => {
   let mockResume: ReturnType<typeof vi.fn>;
   let mockCreateOscillator: ReturnType<typeof vi.fn>;
   let mockCreateGain: ReturnType<typeof vi.fn>;
+  let mockCreateBuffer: ReturnType<typeof vi.fn>;
+  let mockCreateBufferSource: ReturnType<typeof vi.fn>;
+  let mockBufferSourceStart: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     soundService.setMuted(false);
     (soundService as unknown as { ctx: unknown }).ctx = null;
+    (soundService as unknown as { selectBuffer: unknown }).selectBuffer = null;
     (soundService as unknown as { isUnlocked: boolean }).isUnlocked = false;
 
     mockResume = vi.fn().mockResolvedValue(undefined);
@@ -30,14 +34,28 @@ describe('SoundService', () => {
       },
       connect: vi.fn(),
     });
+    mockBufferSourceStart = vi.fn();
+    mockCreateBufferSource = vi.fn().mockReturnValue({
+      buffer: null,
+      connect: vi.fn(),
+      start: mockBufferSourceStart,
+    });
+    mockCreateBuffer = vi.fn().mockReturnValue({
+      length: 3748,
+      sampleRate: 44100,
+      getChannelData: vi.fn().mockReturnValue(new Float32Array(3748)),
+    });
 
     function MockAudioContext(this: unknown) {
       return {
         state: 'suspended',
+        sampleRate: 44100,
         currentTime: 1.5,
         resume: mockResume,
         createOscillator: mockCreateOscillator,
         createGain: mockCreateGain,
+        createBuffer: mockCreateBuffer,
+        createBufferSource: mockCreateBufferSource,
         destination: {},
       };
     }
@@ -61,60 +79,58 @@ describe('SoundService', () => {
     expect(mockResume).toHaveBeenCalled();
   });
 
-  it('resumes suspended context and plays sound on playSelect fallback', async () => {
-    await soundService.playSelect();
-    expect(mockResume).toHaveBeenCalled();
-    expect(mockCreateOscillator).toHaveBeenCalled();
-    expect(mockCreateGain).toHaveBeenCalled();
+  it('preloads and initializes AudioBuffer directly in memory', () => {
+    soundService.preload();
+    expect(mockCreateBuffer).toHaveBeenCalled();
   });
 
-  it('uses HTMLAudioElement pool when available', async () => {
-    const mockPlay = vi.fn().mockResolvedValue(undefined);
-    const mockLoad = vi.fn();
-    class MockAudio {
-      src: string;
-      preload: string = '';
-      volume: number = 1;
-      currentTime: number = 0;
-      constructor(src: string) {
-        this.src = src;
-      }
-      play = mockPlay;
-      load = mockLoad;
-    }
+  it('plays select sound via AudioBufferSourceNode', async () => {
+    soundService.preload();
+    soundService.playSelect();
+    expect(mockResume).toHaveBeenCalled();
+    // Await promise microtask
+    await Promise.resolve();
+    expect(mockCreateBufferSource).toHaveBeenCalled();
+    expect(mockBufferSourceStart).toHaveBeenCalledWith(0);
+  });
 
-    (soundService as unknown as { audioPool: unknown[] }).audioPool = [
-      new MockAudio('data:audio/wav;base64,test'),
-      new MockAudio('data:audio/wav;base64,test'),
-    ];
-    (soundService as unknown as { poolIndex: number }).poolIndex = 0;
-
-    await soundService.playSelect();
-    expect(mockPlay).toHaveBeenCalledTimes(1);
-    expect(mockCreateOscillator).not.toHaveBeenCalled();
+  it('falls back to oscillator if buffer is unavailable', async () => {
+    (soundService as unknown as { selectBuffer: unknown }).selectBuffer = null;
+    mockCreateBuffer.mockImplementation(() => {
+      throw new Error('Not supported');
+    });
+    soundService.playSelect();
+    await Promise.resolve();
+    expect(mockResume).toHaveBeenCalled();
+    expect(mockCreateOscillator).toHaveBeenCalled();
   });
 
   it('plays correct chime', async () => {
-    await soundService.playCorrect();
+    soundService.playCorrect();
+    await Promise.resolve();
     expect(mockResume).toHaveBeenCalled();
     expect(mockCreateOscillator).toHaveBeenCalled();
   });
 
   it('plays wrong sound', async () => {
-    await soundService.playWrong();
+    soundService.playWrong();
+    await Promise.resolve();
     expect(mockResume).toHaveBeenCalled();
     expect(mockCreateOscillator).toHaveBeenCalled();
   });
 
   it('plays complete victory sound', async () => {
-    await soundService.playComplete();
+    soundService.playComplete();
+    await Promise.resolve();
     expect(mockResume).toHaveBeenCalled();
     expect(mockCreateOscillator).toHaveBeenCalled();
   });
 
   it('does not play when muted', async () => {
     soundService.setMuted(true);
-    await soundService.playSelect();
+    soundService.playSelect();
+    await Promise.resolve();
+    expect(mockCreateBufferSource).not.toHaveBeenCalled();
     expect(mockCreateOscillator).not.toHaveBeenCalled();
   });
 });
