@@ -34,6 +34,7 @@ export const CompletionPage: React.FC = () => {
     userAnswers,
     elapsedTime,
     exitSession,
+    realExamMode,
   } = useGroupProgressStore();
 
   const totalQuestions = activeQueue.length;
@@ -61,6 +62,11 @@ export const CompletionPage: React.FC = () => {
 
   // Selected question for snapshot modal
   const [snapshotItem, setSnapshotItem] = useState<DisplayReviewItem | null>(null);
+  const [isModalStemToggled, setIsModalStemToggled] = useState(false);
+
+  useEffect(() => {
+    setIsModalStemToggled(false);
+  }, [snapshotItem]);
 
   // Lock body scroll when snapshot modal is open
   useEffect(() => {
@@ -264,18 +270,18 @@ export const CompletionPage: React.FC = () => {
                   </span>
 
                   <div className="flex-1 min-w-0 space-y-1">
-                    {/* Line 1: English Word Pair */}
+                    {/* Line 1: English Word Pair - both black for easy reading */}
                     <div className="flex items-center space-x-2 font-mono text-sm leading-tight">
                       <span className="font-extrabold text-slate-900 tracking-tight">{item.word1}</span>
                       <span className="text-slate-400 font-bold">=</span>
-                      <span className="font-extrabold text-blue-600 tracking-tight">{item.word2}</span>
+                      <span className="font-extrabold text-slate-900 tracking-tight">{item.word2}</span>
                     </div>
 
-                    {/* Line 2: Chinese Definitions */}
-                    <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-xs font-sans text-slate-500 font-medium leading-normal">
-                      <span className="text-slate-600">({item.def1})</span>
+                    {/* Line 2: Chinese Definitions - consistent readable neutral slate */}
+                    <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-xs font-sans text-slate-600 font-medium leading-normal">
+                      <span>({item.def1})</span>
                       <span className="text-slate-300 font-bold">=</span>
-                      <span className="text-blue-600/90">({item.def2})</span>
+                      <span>({item.def2})</span>
                     </div>
                   </div>
                 </div>
@@ -345,12 +351,59 @@ export const CompletionPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Question Stem Snapshot (Clean sentence without redundant definition) */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-                <p className="text-sm sm:text-base font-medium text-slate-800 leading-relaxed">
-                  {renderStem(snapshotItem.question.stem)}
-                </p>
-              </div>
+              {/* Question Stem Snapshot with Click-to-Toggle matching quiz mode */}
+              {(() => {
+                const isSynthetic =
+                  Boolean(snapshotItem.question.isSynthetic) ||
+                  String(snapshotItem.question.id).startsWith('fallback-') ||
+                  String(snapshotItem.question.id).startsWith('synthetic-');
+
+                const hasOriginalQuestion =
+                  !isSynthetic &&
+                  Boolean(snapshotItem.question.stem) &&
+                  !/^[\u4e00-\u9fa5\s；;，,、/／]+$/.test(snapshotItem.question.stem);
+
+                let chineseStem =
+                  snapshotItem.question.vocabPair?.definition || snapshotItem.question.stem;
+                if (/[\u4e00-\u9fa5]/.test(chineseStem) && chineseStem.includes(' / ')) {
+                  chineseStem = chineseStem.split(' / ')[0].trim();
+                }
+
+                const defaultShowsChinese = !realExamMode || !hasOriginalQuestion;
+                const isShowingChinese = defaultShowsChinese ? !isModalStemToggled : isModalStemToggled;
+
+                return (
+                  <div
+                    onClick={hasOriginalQuestion ? () => setIsModalStemToggled((prev) => !prev) : undefined}
+                    className={`p-4 rounded-2xl bg-slate-50 border border-slate-200/80 min-h-[72px] flex items-center justify-center transition-colors ${
+                      hasOriginalQuestion
+                        ? 'cursor-pointer select-none hover:bg-slate-100/80 hover:border-slate-300'
+                        : ''
+                    }`}
+                    title={
+                      hasOriginalQuestion
+                        ? isShowingChinese
+                          ? '点击切换为英文原题'
+                          : '点击切换为中文释义'
+                        : undefined
+                    }
+                  >
+                    {isShowingChinese ? (
+                      <div className="text-center py-0.5 w-full">
+                        <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                          {chineseStem}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="w-full">
+                        <p className="text-sm sm:text-base font-medium text-slate-800 leading-relaxed">
+                          {renderStem(snapshotItem.question.stem)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Unknown marker banner if user marked unknown */}
               {snapshotItem.isUnknown && (
