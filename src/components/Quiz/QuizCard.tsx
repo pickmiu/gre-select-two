@@ -26,15 +26,15 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   onNext,
   onMarkUnknown,
 }) => {
-  const showChineseStem = useGroupProgressStore((s) => s.showChineseStem);
+  const realExamMode = useGroupProgressStore((s) => s.realExamMode);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [isRevealedOriginal, setIsRevealedOriginal] = useState(false);
+  const [isToggled, setIsToggled] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
 
   // Reset states on question change
   useEffect(() => {
     setShowTooltip(false);
-    setIsRevealedOriginal(false);
+    setIsToggled(false);
     setIsShaking(false);
   }, [question.id]);
 
@@ -45,11 +45,6 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     document.addEventListener('click', handleGlobalClick);
     return () => document.removeEventListener('click', handleGlobalClick);
   }, [showTooltip]);
-
-  // If showChineseStem is enabled, display Chinese definition directly
-  let rawStem = showChineseStem
-    ? (question.vocabPair?.definition || question.stem)
-    : question.stem;
 
   // Format stem with styled fill-in-the-blank underline
   const renderStem = (stem: string) => {
@@ -67,20 +62,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     );
   };
 
-  const isChineseStem = /[\u4e00-\u9fa5]/.test(rawStem);
-
-  // If Chinese stem contains combined definitions (' / '), only display the first word's definition
-  if (isChineseStem && rawStem.includes(' / ')) {
-    rawStem = rawStem.split(' / ')[0].trim();
-  }
-
   // Detect if question options were not found in real question bank (i.e. synthetic / fallback)
   const isSynthetic =
     Boolean(question.isSynthetic) ||
     String(question.id).startsWith('fallback-') ||
     String(question.id).startsWith('synthetic-');
-
-  const showQuestionMark = showChineseStem && isSynthetic;
 
   // Check if real original question text exists
   const hasOriginalQuestion =
@@ -88,11 +74,23 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     Boolean(question.stem) &&
     !/^[\u4e00-\u9fa5\s；;，,、/／]+$/.test(question.stem);
 
+  // Extract pure Chinese definition stem
+  let chineseStem = question.vocabPair?.definition || question.stem;
+  if (/[\u4e00-\u9fa5]/.test(chineseStem) && chineseStem.includes(' / ')) {
+    chineseStem = chineseStem.split(' / ')[0].trim();
+  }
+
+  // By default, display Chinese definition unless realExamMode is ON and a real exam question exists
+  const defaultShowsChinese = !realExamMode || !hasOriginalQuestion;
+  const isShowingChinese = defaultShowsChinese ? !isToggled : isToggled;
+
+  const showQuestionMark = isShowingChinese && isSynthetic;
+
   const handleStemClick = () => {
     if (hasOriginalQuestion) {
-      setIsRevealedOriginal((prev) => !prev);
+      setIsToggled((prev) => !prev);
     } else {
-      // Trigger wobble / shake animation
+      // Trigger wobble / shake animation when clicking with no real question available
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 450);
     }
@@ -108,16 +106,17 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     >
       {/* Stem Card */}
       <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80 min-h-[90px] flex items-center justify-center">
-        {isChineseStem && !isRevealedOriginal ? (
+        {isShowingChinese ? (
           <div
             onClick={handleStemClick}
             className={`text-center py-1 cursor-pointer select-none w-full ${
               isShaking ? 'animate-shake' : ''
             }`}
+            title={hasOriginalQuestion ? '点击切换为英文真题' : undefined}
           >
             <div className="inline-flex items-center justify-center gap-1.5 relative max-w-full">
               <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                {rawStem}
+                {chineseStem}
               </p>
 
               {showQuestionMark && (
@@ -166,8 +165,9 @@ export const QuizCard: React.FC<QuizCardProps> = ({
           </div>
         ) : (
           <div
-            onClick={showChineseStem && hasOriginalQuestion ? handleStemClick : undefined}
-            className={`w-full ${showChineseStem && hasOriginalQuestion ? "cursor-pointer" : ""}`}
+            onClick={handleStemClick}
+            className="w-full cursor-pointer select-none py-1"
+            title="点击切换为中文释义"
           >
             <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
               {renderStem(question.stem)}

@@ -17,8 +17,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
 
-  const showChineseStem = useGroupProgressStore((s) => s.showChineseStem);
-  const setShowChineseStem = useGroupProgressStore((s) => s.setShowChineseStem);
+  const realExamMode = useGroupProgressStore((s) => s.realExamMode);
+  const setRealExamMode = useGroupProgressStore((s) => s.setRealExamMode);
   const resetAllProgress = useGroupProgressStore((s) => s.resetAll);
   const resetWords = useWordStore((s) => s.resetWordsToDefault);
   const resetQuestions = useQuizStore((s) => s.resetQuestionsToDefault);
@@ -99,8 +99,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               <div className="flex items-start space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-slate-800">真题优先与纯净兜底：</strong>
-                  优先匹配历年填空真题；若无对应真题，直接呈现中文释义作为题干，考查精准。
+                  <strong className="text-slate-800">释义与真题随时互切：</strong>
+                  默认呈现中文释义高效记忆，开启真题模式可优先匹配历年填空真题；做题时点击题干可随时互切。
                 </div>
               </div>
 
@@ -124,10 +124,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <div className="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/80 flex items-center justify-between gap-3">
               <div className="space-y-0.5">
                 <div className="font-bold text-sm text-slate-800">
-                  题干仅展示中文释义
+                  开启真题模式
                 </div>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  仍结合真题生成 6 个选项，但题干直接显示中文释义，适合高频速刷
+                  题干优先展示GRE历年真题；默认未开启；适合后期刷题使用
                 </p>
               </div>
 
@@ -135,16 +135,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               <button
                 type="button"
                 role="switch"
-                aria-checked={showChineseStem}
-                onClick={() => setShowChineseStem(!showChineseStem)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  showChineseStem ? 'bg-blue-600' : 'bg-slate-300'
-                }`}
+                aria-checked={realExamMode}
+                onClick={() => setRealExamMode(!realExamMode)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${realExamMode ? 'bg-blue-600' : 'bg-slate-300'
+                  }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                    showChineseStem ? 'translate-x-5' : 'translate-x-0'
-                  }`}
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${realExamMode ? 'translate-x-5' : 'translate-x-0'
+                    }`}
                 />
               </button>
             </div>

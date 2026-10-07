@@ -23,12 +23,14 @@ interface GroupProgressState {
   wrongIndices: number[];
   userAnswers: Record<number, string[]>;
   elapsedTime: number;
-  showChineseStem: boolean;
+  realExamMode: boolean;
+  showChineseStem?: boolean;
   appStage: AppStage;
 
   // Actions
   setDataset: (dataset: DatasetKey) => void;
-  setShowChineseStem: (show: boolean) => void;
+  setRealExamMode: (enabled: boolean) => void;
+  setShowChineseStem?: (show: boolean) => void;
   startGroup: (
     group: VocabGroup,
     allQuestions: QuizQuestion[],
@@ -61,11 +63,13 @@ export const useGroupProgressStore = create<GroupProgressState>()(
       wrongIndices: [],
       userAnswers: {},
       elapsedTime: 0,
+      realExamMode: false,
       showChineseStem: false,
       appStage: 'selection',
 
       setDataset: (dataset) => set({ currentDataset: dataset }),
-      setShowChineseStem: (show) => set({ showChineseStem: show }),
+      setRealExamMode: (enabled) => set({ realExamMode: enabled }),
+      setShowChineseStem: (show) => set({ realExamMode: !show }),
 
       startGroup: (group, allQuestions, allPoolPairs) => {
         const state = get();
@@ -338,7 +342,12 @@ export const useGroupProgressStore = create<GroupProgressState>()(
       partialize: (state) => ({
         currentDataset: state.currentDataset,
         progress: state.progress,
-        showChineseStem: state.showChineseStem,
+        realExamMode: state.realExamMode,
+      }),
+      merge: (persistedState: any, currentState) => ({
+        ...currentState,
+        ...persistedState,
+        realExamMode: persistedState?.realExamMode ?? false,
       }),
     }
   )

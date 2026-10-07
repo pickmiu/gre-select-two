@@ -126,13 +126,13 @@ describe('useGroupProgressStore', () => {
     expect(useGroupProgressStore.getState().elapsedTime).toBe(45);
   });
 
-  it('toggles showChineseStem setting correctly', () => {
-    expect(useGroupProgressStore.getState().showChineseStem).toBe(false);
+  it('defaults realExamMode to false and toggles correctly', () => {
+    expect(useGroupProgressStore.getState().realExamMode).toBe(false);
 
-    useGroupProgressStore.getState().setShowChineseStem(true);
-    expect(useGroupProgressStore.getState().showChineseStem).toBe(true);
+    useGroupProgressStore.getState().setRealExamMode(true);
+    expect(useGroupProgressStore.getState().realExamMode).toBe(true);
 
-    useGroupProgressStore.getState().setShowChineseStem(false);
-    expect(useGroupProgressStore.getState().showChineseStem).toBe(false);
+    useGroupProgressStore.getState().setRealExamMode(false);
+    expect(useGroupProgressStore.getState().realExamMode).toBe(false);
   });
 });
