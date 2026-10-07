@@ -61,11 +61,55 @@ describe('SoundService', () => {
     expect(mockResume).toHaveBeenCalled();
   });
 
-  it('resumes suspended context and plays sound on playSelect', async () => {
+  it('resumes suspended context and plays sound on playSelect fallback', async () => {
     await soundService.playSelect();
     expect(mockResume).toHaveBeenCalled();
     expect(mockCreateOscillator).toHaveBeenCalled();
     expect(mockCreateGain).toHaveBeenCalled();
+  });
+
+  it('uses HTMLAudioElement pool when available', async () => {
+    const mockPlay = vi.fn().mockResolvedValue(undefined);
+    const mockLoad = vi.fn();
+    class MockAudio {
+      src: string;
+      preload: string = '';
+      volume: number = 1;
+      currentTime: number = 0;
+      constructor(src: string) {
+        this.src = src;
+      }
+      play = mockPlay;
+      load = mockLoad;
+    }
+
+    (soundService as unknown as { audioPool: unknown[] }).audioPool = [
+      new MockAudio('data:audio/wav;base64,test'),
+      new MockAudio('data:audio/wav;base64,test'),
+    ];
+    (soundService as unknown as { poolIndex: number }).poolIndex = 0;
+
+    await soundService.playSelect();
+    expect(mockPlay).toHaveBeenCalledTimes(1);
+    expect(mockCreateOscillator).not.toHaveBeenCalled();
+  });
+
+  it('plays correct chime', async () => {
+    await soundService.playCorrect();
+    expect(mockResume).toHaveBeenCalled();
+    expect(mockCreateOscillator).toHaveBeenCalled();
+  });
+
+  it('plays wrong sound', async () => {
+    await soundService.playWrong();
+    expect(mockResume).toHaveBeenCalled();
+    expect(mockCreateOscillator).toHaveBeenCalled();
+  });
+
+  it('plays complete victory sound', async () => {
+    await soundService.playComplete();
+    expect(mockResume).toHaveBeenCalled();
+    expect(mockCreateOscillator).toHaveBeenCalled();
   });
 
   it('does not play when muted', async () => {
