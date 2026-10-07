@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle2, Clock } from 'lucide-react';
 import { VocabGroup, GroupProgress } from '../../types';
+import { getGroupProgressStats } from '../../utils/progressStats';
 
 interface GroupCardProps {
   group: VocabGroup;
@@ -15,6 +16,11 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, progress, onSelect 
 
   const isCompleted = status === 'completed';
   const isInProgress = status === 'in_progress';
+
+  const { correctPercent, wrongPercent, correctCount, wrongCount } = getGroupProgressStats(
+    group,
+    progress
+  );
 
   return (
     <div
@@ -57,13 +63,39 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, progress, onSelect 
         </div>
 
         {/* Minimal Progress Bar (single line, no numbers/text) */}
-        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-3">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${
-              isCompleted ? 'bg-emerald-500 w-full' : isInProgress ? 'bg-blue-600' : 'w-0'
-            }`}
-            style={isInProgress ? { width: `${Math.min(100, (currentIndex / total) * 100)}%` } : undefined}
-          />
+        <div
+          className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-3 flex"
+          title={
+            isCompleted
+              ? wrongCount === 0
+                ? '全部正确 (100%)'
+                : `正确 ${correctCount} 题 (${correctPercent.toFixed(1)}%)，错误 ${wrongCount} 题 (${wrongPercent.toFixed(1)}%)`
+              : undefined
+          }
+        >
+          {isCompleted ? (
+            <>
+              {correctCount > 0 && (
+                <div
+                  className="bg-emerald-500 h-full transition-all duration-300"
+                  style={{ width: `${correctPercent}%` }}
+                />
+              )}
+              {wrongCount > 0 && (
+                <div
+                  className="bg-rose-500 h-full transition-all duration-300"
+                  style={{ width: `${wrongPercent}%` }}
+                />
+              )}
+            </>
+          ) : isInProgress ? (
+            <div
+              className="bg-blue-600 h-full rounded-full transition-all duration-300"
+              style={{ width: `${Math.min(100, (currentIndex / total) * 100)}%` }}
+            />
+          ) : (
+            <div className="w-0 h-full" />
+          )}
         </div>
       </div>
 

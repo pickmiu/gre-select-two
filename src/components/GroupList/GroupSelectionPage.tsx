@@ -6,6 +6,7 @@ import { parseQuestionsCSV } from '../../utils/csvParser';
 import { GroupCard } from './GroupCard';
 import { SettingsModal } from '../Common/SettingsModal';
 import { VocabGroup } from '../../types';
+import { soundService } from '../../utils/audio';
 
 import zhangweiCSV from '../../data/words.csv?raw';
 import bbgreCSV from '../../data/bbgreword.csv?raw';
@@ -27,6 +28,7 @@ export const GroupSelectionPage: React.FC = () => {
   const currentProgress = progress[currentDataset] || {};
 
   const handleSelectGroup = (group: VocabGroup) => {
+    soundService.unlock();
     startGroup(group, allQuestions, activePool);
   };
 

@@ -3,6 +3,7 @@
 class SoundService {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private isUnlocked: boolean = false;
 
   private getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
@@ -14,10 +15,35 @@ class SoundService {
         this.ctx = new AudioCtx();
       }
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
     return this.ctx;
+  }
+
+  /**
+   * Ensure AudioContext is created and resumed before playing any sound.
+   */
+  public async ensureContext(): Promise<AudioContext | null> {
+    const ctx = this.getContext();
+    if (!ctx) return null;
+
+    if (ctx.state === 'suspended') {
+      try {
+        await ctx.resume();
+      } catch {
+        // Silently catch if user interaction has not yet unlocked audio
+      }
+    }
+    return ctx;
+  }
+
+  /**
+   * Unlock AudioContext on the first user interaction.
+   */
+  public async unlock(): Promise<void> {
+    if (this.isUnlocked) return;
+    const ctx = await this.ensureContext();
+    if (ctx && ctx.state === 'running') {
+      this.isUnlocked = true;
+    }
   }
 
   public toggleMute(): boolean {
@@ -34,36 +60,38 @@ class SoundService {
   }
 
   // 1. Duolingo Option Select Pop/Bloop
-  public playSelect() {
+  public async playSelect() {
     if (this.isMuted) return;
-    const ctx = this.getContext();
+    const ctx = await this.ensureContext();
     if (!ctx) return;
 
     try {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
+      const now = ctx.currentTime;
 
+      // Crisp Duolingo-style pop: 520Hz down to 220Hz over 60ms
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(480, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.05);
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(220, now + 0.06);
 
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.05);
+      osc.start(now);
+      osc.stop(now + 0.07);
     } catch {
       // Audio playback fails silently if restricted
     }
   }
 
   // 2. Duolingo Correct Chime (Bright 2-note Ding-Dong)
-  public playCorrect() {
+  public async playCorrect() {
     if (this.isMuted) return;
-    const ctx = this.getContext();
+    const ctx = await this.ensureContext();
     if (!ctx) return;
 
     try {
@@ -98,9 +126,9 @@ class SoundService {
   }
 
   // 3. Duolingo Wrong Sound (Low dull dual-tone)
-  public playWrong() {
+  public async playWrong() {
     if (this.isMuted) return;
-    const ctx = this.getContext();
+    const ctx = await this.ensureContext();
     if (!ctx) return;
 
     try {
@@ -125,9 +153,9 @@ class SoundService {
   }
 
   // 4. Duolingo Level Complete Victory Fanfare
-  public playComplete() {
+  public async playComplete() {
     if (this.isMuted) return;
-    const ctx = this.getContext();
+    const ctx = await this.ensureContext();
     if (!ctx) return;
 
     try {
@@ -159,3 +187,13 @@ class SoundService {
 }
 
 export const soundService = new SoundService();
+
+// Pre-warm / unlock Web Audio API on first user interaction anywhere in window
+if (typeof window !== 'undefined') {
+  const events = ['click', 'touchstart', 'keydown', 'pointerdown'];
+  const unlockAudio = () => {
+    soundService.unlock();
+    events.forEach((ev) => window.removeEventListener(ev, unlockAudio));
+  };
+  events.forEach((ev) => window.addEventListener(ev, unlockAudio, { passive: true }));
+}
