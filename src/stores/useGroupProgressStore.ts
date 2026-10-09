@@ -9,6 +9,7 @@ import {
   AppStage,
 } from '../types';
 import { generateGroupQuizQueue } from '../utils/questionGenerator';
+import { getQuestionTranslation } from '../utils/csvParser';
 
 interface GroupProgressState {
   currentDataset: DatasetKey;
@@ -83,10 +84,17 @@ export const useGroupProgressStore = create<GroupProgressState>()(
           existing.sessionQuestions &&
           existing.sessionQuestions.length > 0
         ) {
+          const patchedQueue = existing.sessionQuestions.map((q) => {
+            if (!q.translation) {
+              const trans = getQuestionTranslation(q);
+              return trans ? { ...q, translation: trans } : q;
+            }
+            return q;
+          });
           set({
             activeGroupId: group.groupId,
             activeGroupTitle: group.title,
-            activeQueue: existing.sessionQuestions,
+            activeQueue: patchedQueue,
             currentIndex: existing.currentIndex,
             wrongIndices: existing.wrongIndices || [],
             userAnswers: existing.userAnswers || {},
@@ -344,11 +352,33 @@ export const useGroupProgressStore = create<GroupProgressState>()(
         progress: state.progress,
         realExamMode: state.realExamMode,
       }),
-      merge: (persistedState: any, currentState) => ({
-        ...currentState,
-        ...persistedState,
-        realExamMode: persistedState?.realExamMode ?? false,
-      }),
+      merge: (persistedState: any, currentState) => {
+        const merged = {
+          ...currentState,
+          ...persistedState,
+          realExamMode: persistedState?.realExamMode ?? false,
+        };
+        if (merged.progress) {
+          for (const ds of Object.keys(merged.progress)) {
+            const dsProgress = merged.progress[ds];
+            if (dsProgress) {
+              for (const gid of Object.keys(dsProgress)) {
+                const gp = dsProgress[gid];
+                if (gp && Array.isArray(gp.sessionQuestions)) {
+                  gp.sessionQuestions = gp.sessionQuestions.map((q: QuizQuestion) => {
+                    if (!q.translation) {
+                      const trans = getQuestionTranslation(q);
+                      return trans ? { ...q, translation: trans } : q;
+                    }
+                    return q;
+                  });
+                }
+              }
+            }
+          }
+        }
+        return merged;
+      },
     }
   )
 );

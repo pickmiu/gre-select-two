@@ -1,5 +1,6 @@
 import Papa from 'papaparse';
 import { WordEntry, QuizQuestion } from '../types';
+import translatedQuestionsCSV from '../data/translated_questions.csv?raw';
 
 /**
  * Parse Word List CSV string into WordEntry array
@@ -97,12 +98,17 @@ export function parseQuestionsCSV(csvText: string): QuizQuestion[] {
       answerBases = baseKeys.map((k) => row[k]?.trim()).filter(Boolean);
     }
 
+    // Check translation / 翻译 column
+    const transKey = Object.keys(row).find((k) => k.includes('translation') || k.includes('翻译'));
+    const rawTranslation = transKey ? row[transKey]?.trim() : '';
+
     if (options.length > 0 && answers.length > 0) {
       questions.push({
         id: rawId,
         stem: rawStem,
         options,
         answers,
+        ...(rawTranslation ? { translation: rawTranslation } : {}),
         ...(answerBases.length > 0 ? { answerBases } : {}),
       });
     }
@@ -141,4 +147,56 @@ export function exportQuestionsToCSV(questions: QuizQuestion[]): string {
     return row;
   });
   return Papa.unparse(data);
+}
+
+let translationMapByStem: Map<string, string> | null = null;
+let translationMapById: Map<string, string> | null = null;
+
+function normalizeStemKey(stem: string): string {
+  return stem
+    .replace(/[\u2018\u2019`']/g, "'")
+    .replace(/[\u201C\u201D"]/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Get question Chinese translation, with automatic fallback lookup by stem or id from translated_questions.csv
+ */
+export function getQuestionTranslation(
+  question?: QuizQuestion | { stem?: string; id?: string | number; translation?: string }
+): string {
+  if (!question) return '';
+  if (question.translation) return question.translation;
+
+  if (!translationMapByStem || !translationMapById) {
+    const stemMap = new Map<string, string>();
+    const idMap = new Map<string, string>();
+    const all = parseQuestionsCSV(translatedQuestionsCSV);
+    for (const q of all) {
+      if (q.translation) {
+        if (q.stem) {
+          stemMap.set(normalizeStemKey(q.stem), q.translation);
+        }
+        if (q.id) {
+          idMap.set(String(q.id).trim(), q.translation);
+        }
+      }
+    }
+    translationMapByStem = stemMap;
+    translationMapById = idMap;
+  }
+
+  if (question.stem) {
+    const found = translationMapByStem.get(normalizeStemKey(question.stem));
+    if (found) return found;
+  }
+
+  if (question.id) {
+    const found = translationMapById.get(String(question.id).trim());
+    if (found) return found;
+  }
+
+  return '';
 }

@@ -10,7 +10,7 @@ import { soundService } from '../../utils/audio';
 
 import zhangweiCSV from '../../data/words.csv?raw';
 import bbgreCSV from '../../data/bbgreword.csv?raw';
-import questionsCSV from '../../data/questions.csv?raw';
+import questionsCSV from '../../data/translated_questions.csv?raw';
 
 export const GroupSelectionPage: React.FC = () => {
   const { currentDataset, progress, setDataset, startGroup } = useGroupProgressStore();

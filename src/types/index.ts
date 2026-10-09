@@ -7,6 +7,7 @@ export interface WordEntry {
 export interface QuizQuestion {
   id: number | string;
   stem: string;
+  translation?: string;
   options: string[];
   answers: string[];
   answerBases?: string[];

@@ -4,6 +4,7 @@ import { HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { QuizQuestion } from '../../types';
 import { AnswerOption } from './AnswerOption';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
+import { getQuestionTranslation } from '../../utils/csvParser';
 
 interface QuizCardProps {
   question: QuizQuestion;
@@ -28,13 +29,13 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 }) => {
   const realExamMode = useGroupProgressStore((s) => s.realExamMode);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [isToggled, setIsToggled] = useState(false);
+  const [overrideMode, setOverrideMode] = useState<'english' | 'translation' | 'definition' | null>(null);
   const [isShaking, setIsShaking] = useState(false);
 
   // Reset states on question change
   useEffect(() => {
     setShowTooltip(false);
-    setIsToggled(false);
+    setOverrideMode(null);
     setIsShaking(false);
   }, [question.id]);
 
@@ -80,20 +81,33 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     chineseStem = chineseStem.split(' / ')[0].trim();
   }
 
-  // By default, display Chinese definition unless realExamMode is ON and a real exam question exists
-  const defaultShowsChinese = !realExamMode || !hasOriginalQuestion;
-  const isShowingChinese = defaultShowsChinese ? !isToggled : isToggled;
+  const translation = question.translation || getQuestionTranslation(question);
 
-  const showQuestionMark = isShowingChinese && isSynthetic;
+  // Initial display mode: Chinese definition unless realExamMode is ON and real question exists
+  const defaultStemMode: 'english' | 'translation' | 'definition' =
+    !realExamMode || !hasOriginalQuestion ? 'definition' : 'english';
+  const currentMode = overrideMode ?? defaultStemMode;
+
+  const showQuestionMark = currentMode === 'definition' && isSynthetic;
 
   const handleStemClick = () => {
-    if (hasOriginalQuestion) {
-      setIsToggled((prev) => !prev);
-    } else {
+    if (!hasOriginalQuestion) {
       // Trigger wobble / shake animation when clicking with no real question available
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 450);
+      return;
     }
+
+    setOverrideMode((prev) => {
+      const cur = prev ?? defaultStemMode;
+      if (cur === 'english') {
+        return translation ? 'translation' : 'definition';
+      } else if (cur === 'translation') {
+        return 'definition';
+      } else {
+        return 'english';
+      }
+    });
   };
 
   return (
@@ -106,7 +120,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     >
       {/* Stem Card */}
       <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-card border border-slate-200/80 min-h-[90px] flex items-center justify-center">
-        {isShowingChinese ? (
+        {currentMode === 'definition' ? (
           <div
             onClick={handleStemClick}
             className={`text-center py-1 cursor-pointer select-none w-full ${
@@ -163,11 +177,21 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               )}
             </div>
           </div>
+        ) : currentMode === 'translation' ? (
+          <div
+            onClick={handleStemClick}
+            className="w-full cursor-pointer select-none py-1 text-center"
+            title="点击切换为单词释义"
+          >
+            <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
+              {translation}
+            </p>
+          </div>
         ) : (
           <div
             onClick={handleStemClick}
             className="w-full cursor-pointer select-none py-1"
-            title="点击切换为中文释义"
+            title={translation ? '点击切换为题目翻译' : '点击切换为单词释义'}
           >
             <p className="text-base sm:text-lg font-medium text-slate-800 leading-relaxed tracking-tight">
               {renderStem(question.stem)}

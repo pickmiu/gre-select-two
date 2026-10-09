@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 import bbgreCSV from '../data/bbgreword.csv?raw';
 import wordsCSV from '../data/words.csv?raw';
 import words1CSV from '../data/words-1.csv?raw';
+import bbgre3600CSV from '../data/bbgre3600.csv?raw';
 import { VocabPair, QuizQuestion } from '../types';
 
 /**
@@ -228,6 +229,8 @@ const COMMON_DISTRACTORS: Record<string, string> = {
   imprecise: '不精确的',
   exact: '确切的',
   inexact: '不确切的',
+  redirect: '改变方向；重新导向',
+  redirected: '改变方向；重新导向',
 };
 
 /**
@@ -405,4 +408,143 @@ export function getPairDefinitions(
     def1: def1 || '暂无释义',
     def2: def2 || '暂无释义',
   };
+}
+
+/**
+ * Isolated dictionary for bbgre3600 words - used strictly for completion/results page fallback
+ */
+let bbgre3600Map: Map<string, string> | null = null;
+
+export function getBbgre3600Dictionary(): Map<string, string> {
+  if (bbgre3600Map) return bbgre3600Map;
+
+  const map = new Map<string, string>();
+  Papa.parse<Record<string, string>>(bbgre3600CSV, {
+    header: true,
+    skipEmptyLines: true,
+    step: (results) => {
+      const row = results.data;
+      const w = (row['单词'] || row['Word'] || row.word)?.trim();
+      let def = (row['中文释义'] || row['汉语解释'] || row.Definition || row.definition)?.trim();
+      if (w && def) {
+        def = def.replace(/[;；\s]+$/, '');
+        if (!map.has(w.toLowerCase())) {
+          map.set(w.toLowerCase(), def);
+        }
+      }
+    },
+  });
+
+  bbgre3600Map = map;
+  return map;
+}
+
+/**
+ * Helper to produce morphological variants for inflected English words
+ */
+function getStemVariants(word: string): string[] {
+  const lower = word.toLowerCase().trim();
+  const cleaned = lower.replace(/^["'`.,;?!()\[\]{}]+|["'`.,;?!()\[\]{}]+$/g, '').trim();
+  const target = cleaned.replace(/^(a|an|the|to|be|of|in|on|at|by|for|with)\s+/i, '').trim();
+  if (!target) return [];
+
+  const list: string[] = [];
+
+  // 1. -ed / -d (e.g. precluded -> preclude, abated -> abate, redirected -> redirect)
+  if (target.endsWith('ed')) {
+    list.push(target.slice(0, -1)); // e.g. precluded -> preclude, abated -> abate
+    list.push(target.slice(0, -2)); // e.g. redirected -> redirect
+    if (target.endsWith('ied')) {
+      list.push(target.slice(0, -3) + 'y');
+    }
+    if (target.length >= 5 && target[target.length - 3] === target[target.length - 4]) {
+      list.push(target.slice(0, -3)); // stopped -> stop
+    }
+  } else if (target.endsWith('d')) {
+    list.push(target.slice(0, -1));
+  }
+
+  // 2. -ing
+  if (target.endsWith('ing')) {
+    list.push(target.slice(0, -3));
+    list.push(target.slice(0, -3) + 'e');
+    if (target.length >= 6 && target[target.length - 4] === target[target.length - 5]) {
+      list.push(target.slice(0, -4));
+    }
+  }
+
+  // 3. -s / -es
+  if (target.endsWith('es')) {
+    list.push(target.slice(0, -2));
+    list.push(target.slice(0, -1));
+  } else if (target.endsWith('s')) {
+    list.push(target.slice(0, -1));
+  }
+
+  // 4. -ly
+  if (target.endsWith('ly')) {
+    list.push(target.slice(0, -2));
+    list.push(target.slice(0, -2) + 'e');
+  }
+
+  return list;
+}
+
+/**
+ * Check bbgre3600 dictionary with normalization and morphological stemming
+ */
+export function lookupBbgre3600Word(word: string): string {
+  if (!word) return '';
+  const dict = getBbgre3600Dictionary();
+  const lower = word.toLowerCase().trim();
+
+  if (dict.has(lower)) return dict.get(lower)!;
+
+  const cleaned = lower.replace(/^["'`.,;?!()\[\]{}]+|["'`.,;?!()\[\]{}]+$/g, '').trim();
+  if (dict.has(cleaned)) return dict.get(cleaned)!;
+
+  const withoutParticle = cleaned.replace(/^(a|an|the|to|be|of|in|on|at|by|for|with)\s+/i, '').trim();
+  if (withoutParticle && dict.has(withoutParticle)) return dict.get(withoutParticle)!;
+
+  const variants = getStemVariants(word);
+  for (const v of variants) {
+    if (dict.has(v)) return dict.get(v)!;
+  }
+
+  const tokens = (withoutParticle || cleaned).split(/\s+/).filter((t) => t.length >= 3);
+  for (const token of tokens) {
+    if (dict.has(token)) return dict.get(token)!;
+  }
+
+  return '';
+}
+
+/**
+ * Dedicated lookup for the results/completion page to fill missing translations via bbgre3600
+ */
+export function lookupCompletionWordDefinition(word: string, fallback?: string): string {
+  if (!word) return fallback || '';
+
+  // 1. Try standard lookup first
+  const stdDef = lookupWordDefinition(word);
+  if (stdDef && stdDef !== '暂无释义') {
+    return stdDef;
+  }
+
+  // Check standard dictionary with inflection variants (e.g. abated -> abate)
+  const variants = getStemVariants(word);
+  for (const v of variants) {
+    const vDef = lookupWordDefinition(v);
+    if (vDef && vDef !== '暂无释义') {
+      return vDef;
+    }
+  }
+
+  // 2. Fall back to bbgre3600
+  const bbgreDef = lookupBbgre3600Word(word);
+  if (bbgreDef && bbgreDef !== '暂无释义') {
+    return bbgreDef;
+  }
+
+  return fallback || '';
 }

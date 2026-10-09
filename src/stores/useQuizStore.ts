@@ -10,7 +10,7 @@ import {
 } from '../utils/questionGenerator';
 import { vibrateSuccess, vibrateError } from '../utils/vibration';
 import { soundService } from '../utils/audio';
-import defaultQuestionsCSV from '../data/questions.csv?raw';
+import defaultQuestionsCSV from '../data/translated_questions.csv?raw';
 
 interface QuizState {
   allQuestions: QuizQuestion[];

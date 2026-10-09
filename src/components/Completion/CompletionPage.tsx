@@ -11,8 +11,13 @@ import {
   X,
 } from 'lucide-react';
 import { useGroupProgressStore } from '../../stores/useGroupProgressStore';
-import { getPairDefinitions, lookupWordDefinition } from '../../utils/vocabLookup';
+import {
+  getPairDefinitions,
+  lookupWordDefinition,
+  lookupCompletionWordDefinition,
+} from '../../utils/vocabLookup';
 import { QuizQuestion } from '../../types';
+import { getQuestionTranslation } from '../../utils/csvParser';
 
 interface DisplayReviewItem {
   originalIndex: number;
@@ -62,10 +67,10 @@ export const CompletionPage: React.FC = () => {
 
   // Selected question for snapshot modal
   const [snapshotItem, setSnapshotItem] = useState<DisplayReviewItem | null>(null);
-  const [isModalStemToggled, setIsModalStemToggled] = useState(false);
+  const [modalStemOverride, setModalStemOverride] = useState<'english' | 'translation' | 'definition' | null>(null);
 
   useEffect(() => {
-    setIsModalStemToggled(false);
+    setModalStemOverride(null);
   }, [snapshotItem]);
 
   // Lock body scroll when snapshot modal is open
@@ -92,16 +97,29 @@ export const CompletionPage: React.FC = () => {
         userAns.includes('__UNKNOWN__') ||
         (isWrong && userAns.length === 0);
 
+      const word1 = pair?.word1 || q.answers[0] || '';
+      const word2 = pair?.word2 || q.answers[1] || '';
+
+      let def1 = defs.def1;
+      let def2 = defs.def2;
+
+      if (!def1 || def1 === '暂无释义') {
+        def1 = lookupCompletionWordDefinition(word1, pair?.definition) || '暂无释义';
+      }
+      if (!def2 || def2 === '暂无释义') {
+        def2 = lookupCompletionWordDefinition(word2, pair?.definition) || '暂无释义';
+      }
+
       return {
         originalIndex: idx + 1,
         index: idx,
         question: q,
         isWrong,
         isUnknown,
-        word1: pair?.word1 || q.answers[0] || '',
-        word2: pair?.word2 || q.answers[1] || '',
-        def1: defs.def1,
-        def2: defs.def2,
+        word1,
+        word2,
+        def1,
+        def2,
         userAnswers: userAns,
       };
     })
@@ -369,12 +387,31 @@ export const CompletionPage: React.FC = () => {
                   chineseStem = chineseStem.split(' / ')[0].trim();
                 }
 
+                const translation =
+                  snapshotItem.question.translation || getQuestionTranslation(snapshotItem.question);
+
                 const defaultShowsChinese = !realExamMode || !hasOriginalQuestion;
-                const isShowingChinese = defaultShowsChinese ? !isModalStemToggled : isModalStemToggled;
+                const defaultStemMode: 'english' | 'translation' | 'definition' =
+                  defaultShowsChinese ? 'definition' : 'english';
+                const currentModalMode = modalStemOverride ?? defaultStemMode;
+
+                const handleModalStemClick = () => {
+                  if (!hasOriginalQuestion) return;
+                  setModalStemOverride((prev) => {
+                    const cur = prev ?? defaultStemMode;
+                    if (cur === 'english') {
+                      return translation ? 'translation' : 'definition';
+                    } else if (cur === 'translation') {
+                      return 'definition';
+                    } else {
+                      return 'english';
+                    }
+                  });
+                };
 
                 return (
                   <div
-                    onClick={hasOriginalQuestion ? () => setIsModalStemToggled((prev) => !prev) : undefined}
+                    onClick={hasOriginalQuestion ? handleModalStemClick : undefined}
                     className={`p-4 rounded-2xl bg-slate-50 border border-slate-200/80 min-h-[72px] flex items-center justify-center transition-colors ${
                       hasOriginalQuestion
                         ? 'cursor-pointer select-none hover:bg-slate-100/80 hover:border-slate-300'
@@ -382,16 +419,26 @@ export const CompletionPage: React.FC = () => {
                     }`}
                     title={
                       hasOriginalQuestion
-                        ? isShowingChinese
-                          ? '点击切换为英文原题'
-                          : '点击切换为中文释义'
+                        ? currentModalMode === 'english'
+                          ? translation
+                            ? '点击切换为题目翻译'
+                            : '点击切换为单词释义'
+                          : currentModalMode === 'translation'
+                          ? '点击切换为单词释义'
+                          : '点击切换为英文原题'
                         : undefined
                     }
                   >
-                    {isShowingChinese ? (
+                    {currentModalMode === 'definition' ? (
                       <div className="text-center py-0.5 w-full">
                         <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                           {chineseStem}
+                        </p>
+                      </div>
+                    ) : currentModalMode === 'translation' ? (
+                      <div className="w-full text-center py-0.5">
+                        <p className="text-sm sm:text-base font-medium text-slate-800 leading-relaxed">
+                          {translation}
                         </p>
                       </div>
                     ) : (
@@ -425,9 +472,9 @@ export const CompletionPage: React.FC = () => {
                   const isSelectedWrong = isSelected && !isCorrect;
                   const isSelectedCorrect = isSelected && isCorrect;
 
-                  // Resilient definition retrieval
-                  let def = lookupWordDefinition(opt);
-                  if (!def && isCorrect) {
+                  // Resilient definition retrieval with bbgre3600 completion fallback
+                  let def = lookupCompletionWordDefinition(opt);
+                  if ((!def || def === '暂无释义') && isCorrect) {
                     const ansIdx = snapshotItem.question.answers.findIndex(
                       (a) => a.toLowerCase().trim() === opt.toLowerCase().trim()
                     );
@@ -436,8 +483,8 @@ export const CompletionPage: React.FC = () => {
                       def = snapshotItem.question.vocabPair?.definition || '';
                     }
                   }
-                  if (!def) {
-                    def = lookupWordDefinition(opt.replace(/^(a|an|the)\s+/i, '').trim());
+                  if (!def || def === '暂无释义') {
+                    def = lookupCompletionWordDefinition(opt.replace(/^(a|an|the)\s+/i, '').trim());
                   }
 
                   return (
@@ -469,7 +516,7 @@ export const CompletionPage: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      {def && (
+                      {def && def !== '暂无释义' && (
                         <span
                           className={`text-[11px] font-sans font-normal mt-1 leading-snug ${
                             isCorrect
